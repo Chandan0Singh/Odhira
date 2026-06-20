@@ -1,0 +1,13 @@
+POST /create-order
+      ↓
+Order ID milega
+      ↓
+Razorpay Checkout Open
+      ↓
+Payment Success
+      ↓
+POST /verify-payment
+      ↓
+Signature Verify
+      ↓
+Order Complete
