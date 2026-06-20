@@ -1,89 +1,150 @@
-import { Search, User, ShoppingBag } from "lucide-react";
+"use client"
+import { useState } from "react";
+import { Search, User, ShoppingBag, X, Menu } from "lucide-react";
 
 export default function Header() {
-  return (
-    <header className="w-full">
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
-      {/* Announcement Bar */}
-      <div className="bg-[#4B5A43] text-white text-center text-xs tracking-[2px] py-2 uppercase">
-        Free Shipping Over ₹4999
+  const navLinks = [
+    { label: "Shop", href: "#" },
+    { label: "Collections", href: "#" },
+    { label: "Lookbook", href: "#" },
+    { label: "About", href: "#" },
+    { label: "Journal", href: "#" },
+  ];
+
+  return (
+    <header className="w-full font-sans sticky top-0 z-50">
+
+      {/* ── Announcement Bar ───────────────────────────────── */}
+      <div className="bg-[#5E6B58] text-[#F8F5EE] text-center text-[10px] tracking-[3px] py-2 uppercase font-medium">
+        Free Shipping On All Orders &nbsp;·&nbsp; Easy 14-Day Returns &nbsp;·&nbsp; 100% Secure Payment
       </div>
 
-      {/* Main Header */}
-      <div className="bg-[#F8F5EE] border-b border-[#E5E0D8]">
-        <div className="max-w-7xl mx-auto px-8">
+      {/* ── Logo Row ──────────────────────────────────────── */}
+      <div className="bg-[#F8F5EE] border-b border-[#E4E0D8] py-5">
+        <div className="max-w-7xl mx-auto px-8 flex items-center justify-between">
 
-          <div className="h-24 flex items-center justify-between">
+          {/* Mobile hamburger */}
+          <button
+            className="lg:hidden text-[#202020] p-1"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
 
-            {/* Left Menu */}
-            <nav className="hidden lg:flex items-center gap-10">
-              <a
-                href="#"
-                className="text-sm uppercase tracking-wider hover:text-[#4B5A43]"
+          {/* Logo — always centered on desktop, left-offset on mobile */}
+          <div className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 lg:mx-auto">
+            <a href="#" className="block text-center">
+              {/* Ornamental top line */}
+              <span className="block w-16 h-px bg-[#A8B2A1] mx-auto mb-1" />
+              <span
+                className="block font-serif text-[28px] leading-none tracking-[6px] text-[#5E6B58] uppercase"
+                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
               >
-                Shop
-              </a>
-
-              <a
-                href="#"
-                className="text-sm uppercase tracking-wider hover:text-[#4B5A43]"
-              >
-                Collections
-              </a>
-
-              <a
-                href="#"
-                className="text-sm uppercase tracking-wider hover:text-[#4B5A43]"
-              >
-                Lookbook
-              </a>
-            </nav>
-
-            {/* Logo */}
-            <div>
-              <h1 className="font-serif text-4xl tracking-wide text-[#2D2D2D]">
-                YOUR BRAND
-              </h1>
-            </div>
-
-            {/* Right Menu */}
-            <div className="flex items-center gap-8">
-
-              <a
-                href="#"
-                className="hidden lg:block text-sm uppercase tracking-wider hover:text-[#4B5A43]"
-              >
-                About
-              </a>
-
-              <a
-                href="#"
-                className="hidden lg:block text-sm uppercase tracking-wider hover:text-[#4B5A43]"
-              >
-                Journal
-              </a>
-
-              <button>
-                <Search size={20} />
-              </button>
-
-              <button>
-                <User size={20} />
-              </button>
-
-              <button className="relative">
-                <ShoppingBag size={20} />
-
-                <span className="absolute -top-2 -right-2 bg-[#4B5A43] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
-                  0
-                </span>
-              </button>
-
-            </div>
-
+                Your Brand
+              </span>
+              <span className="block w-16 h-px bg-[#A8B2A1] mx-auto mt-1" />
+            </a>
           </div>
+
+          {/* Right icons */}
+          <div className="flex items-center gap-5 text-[#202020]">
+            <button
+              onClick={() => setSearchOpen(!searchOpen)}
+              aria-label="Search"
+              className="hover:text-[#5E6B58] transition-colors"
+            >
+              <Search size={18} strokeWidth={1.5} />
+            </button>
+
+            <a href="#" aria-label="Account" className="hover:text-[#5E6B58] transition-colors">
+              <User size={18} strokeWidth={1.5} />
+            </a>
+
+            <a href="#" aria-label="Cart" className="relative hover:text-[#5E6B58] transition-colors">
+              <ShoppingBag size={18} strokeWidth={1.5} />
+              <span className="absolute -top-2 -right-2 bg-[#5E6B58] text-[#F8F5EE] text-[9px] w-[16px] h-[16px] rounded-full flex items-center justify-center font-semibold leading-none">
+                2
+              </span>
+            </a>
+          </div>
+
         </div>
       </div>
+
+      {/* ── Navigation Row ────────────────────────────────── */}
+      <nav className="hidden lg:block bg-[#F8F5EE] border-b border-[#E4E0D8]">
+        <div className="max-w-7xl mx-auto px-8">
+          <ul className="flex items-center justify-center gap-12 h-11">
+            {navLinks.map((link) => (
+              <li key={link.label}>
+                <a
+                  href={link.href}
+                  className="text-[11px] uppercase tracking-[2.5px] text-[#202020] font-medium
+                             hover:text-[#5E6B58] transition-colors duration-200 relative group"
+                >
+                  {link.label}
+                  <span
+                    className="absolute -bottom-0.5 left-0 w-0 h-px bg-[#A8B2A1]
+                               group-hover:w-full transition-all duration-300"
+                  />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </nav>
+
+      {/* ── Search Bar (slide down) ────────────────────────── */}
+      <div
+        className={`bg-[#F8F5EE] border-b border-[#E4E0D8] overflow-hidden transition-all duration-300 ease-out ${
+          searchOpen ? "max-h-16 opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="max-w-2xl mx-auto px-8 py-3 flex items-center gap-3">
+          <Search size={16} className="text-[#A8B2A1] shrink-0" strokeWidth={1.5} />
+          <input
+            type="text"
+            placeholder="Search for products, collections…"
+            autoFocus={searchOpen}
+            className="flex-1 bg-transparent text-sm text-[#202020] placeholder-[#A8B2A1]
+                       outline-none tracking-wide"
+          />
+          <button
+            onClick={() => setSearchOpen(false)}
+            className="text-[#A8B2A1] hover:text-[#5E6B58] transition-colors"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      </div>
+
+      {/* ── Mobile Drawer ─────────────────────────────────── */}
+      <div
+        className={`lg:hidden bg-[#F8F5EE] border-b border-[#E4E0D8] overflow-hidden
+                    transition-all duration-300 ease-out ${
+                      mobileOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                    }`}
+      >
+        <ul className="flex flex-col px-8 py-4 gap-5">
+          {navLinks.map((link) => (
+            <li key={link.label}>
+              <a
+                href={link.href}
+                className="text-sm uppercase tracking-[2px] text-[#202020] font-medium
+                           hover:text-[#5E6B58] transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
     </header>
   );
 }
