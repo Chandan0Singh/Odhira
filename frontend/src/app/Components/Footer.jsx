@@ -22,7 +22,7 @@ export default function Footer() {
               {["Women", "Men", "Accessories", "New Arrivals", "Sale"].map((item) => (
                 <li key={item}>
                   <a
-                    href="#"
+                    href={`/${item.toLowerCase().replace(/\s+/g, '-')}`}
                     className="text-[13px] text-[#c8cfc5] hover:text-[#F8F5EE] transition-colors duration-200"
                   >
                     {item}

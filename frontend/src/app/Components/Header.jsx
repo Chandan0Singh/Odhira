@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState } from "react";
 import { Search, User, ShoppingBag, X, Menu } from "lucide-react";
 
@@ -7,25 +7,52 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const navLinks = [
-    { label: "Shop", href: "#" },
-    { label: "Collections", href: "#" },
-    { label: "Lookbook", href: "#" },
-    { label: "About", href: "#" },
-    { label: "Journal", href: "#" },
+    { label: "Shop", href: "/products" },
+
+    {
+      label: "Collections",
+      href: "/collections",
+      submenu: [
+        { label: "Men", href: "/collections/men" },
+        { label: "Women", href: "/collections/women" },
+        { label: "Accessories", href: "/collections/accessories" },
+        { label: "New Arrivals", href: "/collections/new-arrivals" },
+        { label: "Sale", href: "/collections/sale" },
+      ],
+    },
+
+    { label: "Lookbook", href: "/lookbook" },
+
+    {
+      label: "Account",
+      href: "/account",
+      submenu: [
+        { label: "Profile", href: "/account/profile" },
+        { label: "Orders", href: "/account/orders" },
+        { label: "Addresses", href: "/account/addresses" },
+        { label: "Wishlist", href: "/wishlist" },
+      ],
+    },
+
+    { label: "About", href: "/about" },
+
+    {
+      label: "Journal",
+      href: "/journal",
+    },
   ];
 
   return (
     <header className="w-full font-sans sticky top-0 z-50">
-
       {/* ── Announcement Bar ───────────────────────────────── */}
       <div className="bg-[#5E6B58] text-[#F8F5EE] text-center text-[10px] tracking-[3px] py-2 uppercase font-medium">
-        Free Shipping On All Orders &nbsp;·&nbsp; Easy 14-Day Returns &nbsp;·&nbsp; 100% Secure Payment
+        Free Shipping On All Orders &nbsp;·&nbsp; Easy 14-Day Returns
+        &nbsp;·&nbsp; 100% Secure Payment
       </div>
 
       {/* ── Logo Row ──────────────────────────────────────── */}
       <div className="bg-[#F8F5EE] border-b border-[#E4E0D8] py-5">
         <div className="max-w-7xl mx-auto px-8 flex items-center justify-between">
-
           {/* Mobile hamburger */}
           <button
             className="lg:hidden text-[#202020] p-1"
@@ -37,7 +64,7 @@ export default function Header() {
 
           {/* Logo — always centered on desktop, left-offset on mobile */}
           <div className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 lg:mx-auto">
-            <a href="#" className="block text-center">
+            <a href="/" className="block text-center">
               {/* Ornamental top line */}
               <span className="block w-16 h-px bg-[#A8B2A1] mx-auto mb-1" />
               <span
@@ -60,18 +87,25 @@ export default function Header() {
               <Search size={18} strokeWidth={1.5} />
             </button>
 
-            <a href="#" aria-label="Account" className="hover:text-[#5E6B58] transition-colors">
+            <a
+              href="/account"
+              aria-label="Account"
+              className="hover:text-[#5E6B58] transition-colors"
+            >
               <User size={18} strokeWidth={1.5} />
             </a>
 
-            <a href="#" aria-label="Cart" className="relative hover:text-[#5E6B58] transition-colors">
+            <a
+              href="/cart"
+              aria-label="Cart"
+              className="relative hover:text-[#5E6B58] transition-colors"
+            >
               <ShoppingBag size={18} strokeWidth={1.5} />
               <span className="absolute -top-2 -right-2 bg-[#5E6B58] text-[#F8F5EE] text-[9px] w-[16px] h-[16px] rounded-full flex items-center justify-center font-semibold leading-none">
                 2
               </span>
             </a>
           </div>
-
         </div>
       </div>
 
@@ -80,18 +114,44 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-8">
           <ul className="flex items-center justify-center gap-12 h-11">
             {navLinks.map((link) => (
-              <li key={link.label}>
+              <li key={link.label} className="relative group">
                 <a
                   href={link.href}
-                  className="text-[11px] uppercase tracking-[2.5px] text-[#202020] font-medium
-                             hover:text-[#5E6B58] transition-colors duration-200 relative group"
+                  className="text-[11px] uppercase tracking-[2.5px] text-[#202020]
+                   font-medium hover:text-[#5E6B58] transition-colors"
                 >
                   {link.label}
-                  <span
-                    className="absolute -bottom-0.5 left-0 w-0 h-px bg-[#A8B2A1]
-                               group-hover:w-full transition-all duration-300"
-                  />
                 </a>
+
+                {/* Dropdown */}
+                {link.submenu && (
+                  <div
+                    className="absolute left-1/2 top-full -translate-x-1/2
+                     opacity-0 invisible group-hover:opacity-100
+                     group-hover:visible transition-all duration-300
+                     pt-4 z-50"
+                  >
+                    <div
+                      className="bg-white border border-[#E4E0D8]
+                       shadow-xl min-w-[220px] py-3"
+                    >
+                      {link.submenu.map((item) => (
+                        <a
+                          key={item.label}
+                          href={item.href}
+                          className="block px-5 py-3 text-[12px]
+                           uppercase tracking-[1.5px]
+                           text-[#555]
+                           hover:bg-[#F8F5EE]
+                           hover:text-[#5E6B58]
+                           transition-colors"
+                        >
+                          {item.label}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
@@ -105,7 +165,11 @@ export default function Header() {
         }`}
       >
         <div className="max-w-2xl mx-auto px-8 py-3 flex items-center gap-3">
-          <Search size={16} className="text-[#A8B2A1] shrink-0" strokeWidth={1.5} />
+          <Search
+            size={16}
+            className="text-[#A8B2A1] shrink-0"
+            strokeWidth={1.5}
+          />
           <input
             type="text"
             placeholder="Search for products, collections…"
@@ -144,7 +208,6 @@ export default function Header() {
           ))}
         </ul>
       </div>
-
     </header>
   );
 }
