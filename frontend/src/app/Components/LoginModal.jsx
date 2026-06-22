@@ -1,10 +1,59 @@
 "use client";
 
+import React, { useState } from "react";
 import { X } from "lucide-react";
 import { useEffect } from "react";
 import Link from "next/link";
+import { useAuth } from "../../context/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function LoginModal({ isOpen, onClose, openSignup }) {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const { login } = useAuth();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    setError("");
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Login failed");
+        return;
+      }
+
+      // Save user + token in AuthContext
+      login({
+        user: data.user,
+        token: data.token,
+      });
+
+      onClose();
+
+      router.push("/");
+    } catch (error) {
+      console.error("LOGIN ERROR:", error);
+
+      setError("Something went wrong. Please try again.");
+    }
+  };
+
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "auto";
 
@@ -60,62 +109,38 @@ export default function LoginModal({ isOpen, onClose, openSignup }) {
               Welcome Back
             </h2>
 
-            <p className="mt-2 text-gray-500">
-              Sign in to continue shopping
-            </p>
+            <p className="mt-2 text-gray-500">Sign in to continue shopping</p>
           </div>
 
           {/* Form */}
-          <form className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
+            {error && (
+              <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-lg">
+                {error}
+              </div>
+            )}
+
             <input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Email Address"
-              className="
-                w-full
-                border
-                border-[#D8D4CB]
-                rounded-lg
-                px-4
-                py-3
-                outline-none
-                focus:border-[#5E6B58]
-              "
+              className="w-full border border-[#D8D4CB] rounded-lg px-4 py-3 outline-none focus:border-[#5E6B58]"
+              required
             />
 
             <input
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              className="
-                w-full
-                border
-                border-[#D8D4CB]
-                rounded-lg
-                px-4
-                py-3
-                outline-none
-                focus:border-[#5E6B58]
-              "
+              className="w-full border border-[#D8D4CB] rounded-lg px-4 py-3 outline-none focus:border-[#5E6B58]"
+              required
             />
 
-            <div className="text-right">
-              <Link
-                href="/forgot-password"
-                className="text-sm text-[#5E6B58]"
-              >
-                Forgot Password?
-              </Link>
-            </div>
-
             <button
-              className="
-                w-full
-                bg-[#5E6B58]
-                text-white
-                py-3
-                rounded-lg
-                hover:bg-[#4f5b49]
-                transition-all
-              "
+              type="submit"
+              className="w-full bg-[#5E6B58] text-white py-3 rounded-lg hover:bg-[#4f5b49] transition-all"
             >
               Login
             </button>
@@ -123,9 +148,7 @@ export default function LoginModal({ isOpen, onClose, openSignup }) {
 
           <div className="my-5 flex items-center">
             <div className="h-px flex-1 bg-gray-200" />
-            <span className="px-3 text-xs text-gray-400">
-              OR
-            </span>
+            <span className="px-3 text-xs text-gray-400">OR</span>
             <div className="h-px flex-1 bg-gray-200" />
           </div>
 

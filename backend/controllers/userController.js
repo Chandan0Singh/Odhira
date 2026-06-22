@@ -5,33 +5,50 @@ const User = require("../models/User");
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
+  // Validation
+  if (!email || !password) {
+    return res.status(400).json({
+      success: false,
+      message: "Email and password are required",
+    });
+  }
+
   try {
-    // CHECK USER
-    const user = await User.findOne({ email });
+    // Find User
+    const user = await User.findOne({
+      email: email.toLowerCase(),
+    });
 
+    // User Not Found
     if (!user) {
-      return res.status(400).json({
-        message: "User not found",
-      });
-    }
-
-    // CHECK PASSWORD
-    const match = await bcrypt.compare(password, user.password);
-
-    if (!match) {
       return res.status(401).json({
-        message: "Invalid credentials",
+        success: false,
+        message: "Invalid email or password",
       });
     }
 
-    // CHECK BLOCKED USER
+    // Check Blocked User
     if (user.status === "blocked") {
       return res.status(403).json({
+        success: false,
         message: "Your account has been blocked",
       });
     }
 
-    // GENERATE TOKEN
+    // Compare Password
+    const isMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    // Generate JWT Token
     const token = jwt.sign(
       {
         id: user._id,
@@ -40,25 +57,31 @@ const loginUser = async (req, res) => {
       process.env.JWT_SECRET,
       {
         expiresIn: "7d",
-      },
+      }
     );
 
     return res.status(200).json({
       success: true,
-      message: "Login success",
+      message: "Login successful",
       token,
       user: {
         id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         role: user.role,
         status: user.status,
-        phone: user.phone,
+        profileImage: user.profileImage,
         address: user.address,
       },
     });
   } catch (err) {
+    console.error("LOGIN ERROR:", err);
+
     return res.status(500).json({
+      success: false,
       message: "Login failed",
       error: err.message,
     });
@@ -66,88 +89,116 @@ const loginUser = async (req, res) => {
 };
 
 const signupUser = async (req, res) => {
-  const { name, email, password, role = "user" } = req.body;
+  const {
+    firstName,
+    lastName,
+    email,
+    phone,
+    password,
+    confirmPassword,
+    role = "user",
+  } = req.body;
 
-  // NAME VALIDATION
-  if (!name || name.length < 2) {
+  const name = `${firstName} ${lastName}`.trim();
+
+  // First Name Validation
+  if (!firstName || firstName.length < 2) {
     return res.status(400).json({
-      message: "Name must be at least 2 characters long",
+      message: "First name must be at least 2 characters long",
     });
   }
 
-  if (!/^[A-Za-z\s]+$/.test(name)) {
+  // Last Name Validation
+  if (!lastName || lastName.length < 2) {
     return res.status(400).json({
-      message: "Name can only contain letters and spaces",
+      message: "Last name must be at least 2 characters long",
     });
   }
 
-  // EMAIL VALIDATION
+  // Email Validation
   if (!email || !/\S+@\S+\.\S+/.test(email)) {
     return res.status(400).json({
       message: "Invalid email address",
     });
   }
 
-  // PASSWORD VALIDATION
+  // Phone Validation
+  if (!phone || !/^[6-9]\d{9}$/.test(phone)) {
+    return res.status(400).json({
+      message: "Invalid phone number",
+    });
+  }
+
+  // Password Validation
   if (!password || password.length < 6) {
     return res.status(400).json({
       message: "Password must be at least 6 characters long",
     });
   }
 
+  // Confirm Password Validation
+  if (password !== confirmPassword) {
+    return res.status(400).json({
+      message: "Passwords do not match",
+    });
+  }
+
   try {
-    // CHECK EXISTING USER
-    const exist = await User.findOne({ email });
+    const exist = await User.findOne({
+      $or: [{ email }, { phone }],
+    });
 
     if (exist) {
       return res.status(400).json({
-        message: "Email already exists",
+        message: "Email or phone already exists",
       });
     }
 
-    // HASH PASSWORD
-    const hashed = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // CREATE USER
-    const newUser = new User({
+    const newUser = await User.create({
+      firstName,
+      lastName,
       name,
       email,
-      password: hashed,
+      phone,
+      password: hashedPassword,
       role,
       status: "active",
     });
 
-    await newUser.save();
+    // Generate JWT Token
+    const token = jwt.sign(
+      {
+        id: newUser._id,
+        role: newUser.role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
 
     return res.status(201).json({
       success: true,
-      message: "User created successfully",
+      message: "User registered successfully",
+      token,
       user: {
         _id: newUser._id,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
         name: newUser.name,
         email: newUser.email,
+        phone: newUser.phone,
         role: newUser.role,
         status: newUser.status,
       },
     });
   } catch (err) {
-    console.log("SIGNUP ERROR:", err);
-
-    if (err.name === "ValidationError") {
-      const errors = Object.values(err.errors).map((e) => e.message);
-
-      return res.status(400).json({
-        message: errors.join(", "),
-      });
-    }
-
-    if (err.code === 11000) {
-      return res.status(400).json({
-        message: "Email already exists",
-      });
-    }
+    console.error("SIGNUP ERROR:", err);
 
     return res.status(500).json({
+      success: false,
       message: "Signup failed",
       error: err.message,
     });
@@ -290,7 +341,6 @@ const deleteAccount = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { userId, name, email, role, phone, address } = req.body;
-
 
     if (!userId) {
       return res.status(400).json({

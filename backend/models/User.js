@@ -2,12 +2,21 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    firstName: {
       type: String,
-      required: [true, "Name is required"],
-      minlength: [2, "Name must be at least 2 characters long"],
-      match: [/^[A-Za-z\s]+$/, "Name can only contain letters and spaces"], // 👈 custom validation
+      required: true,
     },
+
+    lastName: {
+      type: String,
+      required: true,
+    },
+
+    name: {
+    type: String,
+    required: true,
+  },
+
     email: {
       type: String,
       required: [true, "Email is required"],
