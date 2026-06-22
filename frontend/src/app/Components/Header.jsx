@@ -4,13 +4,16 @@ import { useState } from "react";
 import { Search, User, ShoppingBag, X, Menu } from "lucide-react";
 import LoginModal from "./LoginModal";
 import SignupModal from "./SignupModal";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Header() {
+  const { user, logout, isAuthenticated } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
-  const [user, setUser] = useState(false);
+
+  console.log("User in Header:", user);
 
   const navLinks = [
     { label: "Shop", href: "/products" },
@@ -86,7 +89,7 @@ export default function Header() {
 
             {/* Right icons */}
             <div className="flex items-center gap-5 text-[#202020]">
-              {user ? (
+              {isAuthenticated ? (
                 <>
                   <button
                     onClick={() => setSearchOpen(!searchOpen)}
@@ -96,13 +99,81 @@ export default function Header() {
                     <Search size={18} strokeWidth={1.5} />
                   </button>
 
-                  <Link
+                  {/* <Link
                     href="/account"
                     aria-label="Account"
                     className="hover:text-[#5E6B58] transition-colors"
                   >
                     <User size={18} strokeWidth={1.5} />
-                  </Link>
+                  </Link> */}
+
+                  <div className="relative group">
+                    <Link
+                      href="/account"
+                      aria-label="Account"
+                      className="hover:text-[#5E6B58] transition-colors"
+                    >
+                      <User size={18} strokeWidth={1.5} />
+                    </Link>
+
+                    {/* Dropdown */}
+                    <div
+                      className="
+      absolute right-[-593%] top-full mt-3
+      w-52 bg-white border border-[#E4E0D8]
+      shadow-xl rounded-lg
+      opacity-0 invisible
+      group-hover:opacity-100
+      group-hover:visible
+      transition-all duration-200
+      z-50
+    "
+                    >
+                      <div className="p-4 border-b border-[#E4E0D8]">
+                        <p className="text-sm font-medium text-[#202020]">
+                          Hi, {user?.firstName || user?.name}
+                        </p>
+                      </div>
+                      
+                      <Link
+                        href="/admin"
+                        className="block px-4 py-3 text-sm hover:bg-[#F8F5EE]"
+                      >
+                        Admin Dashboard
+                      </Link>
+
+                      <Link
+                        href="/account"
+                        className="block px-4 py-3 text-sm hover:bg-[#F8F5EE]"
+                      >
+                        My Account
+                      </Link>
+
+                      <Link
+                        href="/account/orders"
+                        className="block px-4 py-3 text-sm hover:bg-[#F8F5EE]"
+                      >
+                        Orders
+                      </Link>
+
+                      <Link
+                        href="/wishlist"
+                        className="block px-4 py-3 text-sm hover:bg-[#F8F5EE]"
+                      >
+                        Wishlist
+                      </Link>
+
+                      <button
+                        onClick={logout}
+                        className="
+        w-full text-left px-4 py-3 text-sm
+        text-red-500 hover:bg-[#F8F5EE]
+      "
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </div>
 
                   <Link
                     href="/cart"
@@ -231,10 +302,14 @@ export default function Header() {
           </ul>
         </div>
       </header>
-      <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} openSignup={()=>{
-        setLoginOpen(false);
-        setSignupOpen(true);
-      }} />
+      <LoginModal
+        isOpen={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        openSignup={() => {
+          setLoginOpen(false);
+          setSignupOpen(true);
+        }}
+      />
 
       <SignupModal
         isOpen={signupOpen}
