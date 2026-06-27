@@ -3,6 +3,7 @@ import "./globals.css";
 
 import Header from "./Components/Header";
 import Footer from "./Components/Footer";
+import LayoutWrapper from "./Components/layout/LayoutWrapper";
 
 import { AuthProvider } from "@/context/AuthContext";
 
@@ -31,11 +32,11 @@ export default function RootLayout({ children }) {
     >
       <body className="antialiased bg-[#F8F5EE] text-[#2D2D2D]">
         <AuthProvider>
-          <Header />
 
-          <main>{children}</main>
+          <LayoutWrapper>
+            {children}
+          </LayoutWrapper>
 
-          <Footer />
         </AuthProvider>
       </body>
     </html>
