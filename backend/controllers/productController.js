@@ -1,4 +1,6 @@
 const Product = require("../models/Product");
+require("../models/Category");
+require("../models/Collection");
 
 // ─── GET ALL PRODUCTS ─────────────────────────────────────────────────────────
 // Supports filters: ?category=&collection=&status=&isFeatured=&isSale=&isBestSeller=&isNewArrival=

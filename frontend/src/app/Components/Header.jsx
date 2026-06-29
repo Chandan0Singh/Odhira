@@ -16,7 +16,7 @@ export default function Header() {
   console.log("User in Header:", user);
 
   const navLinks = [
-    { label: "Shop", href: "/products" },
+    { label: "Shop", href: "/shop" },
 
     {
       label: "Collections",
@@ -134,7 +134,7 @@ export default function Header() {
                           Hi, {user?.firstName || user?.name}
                         </p>
                       </div>
-                      
+
                       <Link
                         href="/admin"
                         className="block px-4 py-3 text-sm hover:bg-[#F8F5EE]"

@@ -1,1726 +1,992 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
-const Product = require('./models/Product');
+const slugify = require('slugify');
 
-const bagsData = [
-  {
-    id: 'kids-pink',
-    title: 'Kids Pink Mini Bag',
-    image: 'https://rukminim2.flixcart.com/image/750/900/xif0q/sling-bag/f/n/v/-original-imagz49ehhb5azrp.jpeg?q=20&crop=false',
-    price: 999,
-    gender: 'female',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[15%]',
-    arrivalDate: '2025-06-20' // <-- new field
-  },
-  {
-    id: 'kids-blue',
-    title: 'Kids Blue Cartoon Bag',
-    image: 'https://m.media-amazon.com/images/I/71akHUAdSEL._AC_UY1100_.jpg',
-    price: 899,
-    gender: 'male',
-    age: 'child',
-    tags: ['trending', 'classic'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-boy-black',
-    title: 'Teen Boy Black Sling',
-    image: 'https://m.media-amazon.com/images/I/61UBT3Gn+oL._SX679_.jpg',
-    price: 1299,
-    gender: 'male',
-    age: 'teen',
-    tags: ['trending', 'popular'],
-    sale: '[20%]',
-    arrivalDate: '2025-06-10' // older
-  },
-  {
-    id: 'teen-girl-floral',
-    title: 'Teen Girl Floral Backpack',
-    image: 'https://m.media-amazon.com/images/I/81z5vl5YrDL._AC_UY1100_.jpg',
-    price: 1399,
-    gender: 'female',
-    age: 'teen',
-    tags: ['popular', 'premium'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-tote',
-    title: 'Adult Woman Tote',
-    image: 'https://m.media-amazon.com/images/I/61x5q+zB0qL._AC_UY1100_.jpg',
-    price: 2499,
-    gender: 'female',
-    age: 'adult',
-    tags: ['trending']
-  },
-  {
-    id: 'adult-man-laptop',
-    title: 'Adult Man Laptop Bag',
-    image: 'https://m.media-amazon.com/images/I/91ogt8ED2EL._AC_UY1100_.jpg',
-    price: 2799,
-    gender: 'male',
-    age: 'adult',
-    tags: ['new']
-  },
-  {
-    id: 'elder-man-leather',
-    title: 'Elder Man Leather Bag',
-    image: 'https://s.alicdn.com/@sc04/kf/Hc944b3a6d9b244ae964e5eb829394b10X.png_300x300.jpg',
-    price: 3499,
-    gender: 'male',
-    age: 'elder',
-    tags: []
-  },
-  {
-    id: 'elder-woman-handbag',
-    title: 'Elder Woman Classic Handbag',
-    image: 'https://m.media-amazon.com/images/I/71jQgFDHfdL._AC_UY1100_.jpg',
-    price: 1999,
-    gender: 'female',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'unisex-duffel-gym',
-    title: 'Unisex Duffel Gym Bag',
-    image: 'https://m.media-amazon.com/images/I/71LGukjcZeL._AC_UY1100_.jpg',
-    price: 1599,
-    gender: 'unisex',
-    age: 'adult',
-    tags: ['trending', 'popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'kids-unicorn',
-    title: 'Kids Unicorn Backpack',
-    image: 'https://m.media-amazon.com/images/I/61vPyGqS0uL._AC_UY1100_.jpg',
-    price: 999,
-    gender: 'female',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[15%]'
-  },
-  {
-    id: 'travel-backpack-men',
-    title: 'Men’s Travel Backpack',
-    image: 'https://m.media-amazon.com/images/I/81l3rZK4lnL._AC_UY1100_.jpg',
-    price: 2199,
-    gender: 'male',
-    age: 'adult',
-    tags: ['trending'],
-    sale: '[10%]'
-  },
-  {
-    id: 'luxury-leather-women',
-    title: 'Luxury Leather Tote - Women',
-    image: 'https://m.media-amazon.com/images/I/61JDYw+5P6L._AC_UY1100_.jpg',
-    price: 4599,
-    gender: 'female',
-    age: 'adult',
-    tags: ['limited', 'new']
-  },
-  {
-    id: 'college-bag-unisex',
-    title: 'College Backpack - Unisex',
-    image: 'https://m.media-amazon.com/images/I/71tFOp+E8qL._AC_UY1100_.jpg',
-    price: 1099,
-    gender: 'unisex',
-    age: 'teen',
-    tags: ['popular'],
-    sale: '[25%]'
-  },
-  {
-    id: 'office-bag-laptop',
-    title: 'Formal Laptop Office Bag',
-    image: 'https://m.media-amazon.com/images/I/71yE+nDnUnL._AC_UY1100_.jpg',
-    price: 1999,
-    gender: 'unisex',
-    age: 'adult',
-    tags: ['new']
-  },
-  {
-    id: 'fashion-bag-glitter',
-    title: 'Glitter Party Clutch',
-    image: 'https://m.media-amazon.com/images/I/71GknhNhgCL._AC_UY1100_.jpg',
-    price: 899,
-    gender: 'female',
-    age: 'adult',
-    tags: ['trending', 'popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'kids-dino-bag',
-    title: 'Kids Dino Fun Bag',
-    image: 'https://m.media-amazon.com/images/I/718dA6eDoWL._AC_UY1100_.jpg',
-    price: 849,
-    gender: 'male',
-    age: 'child',
-    tags: ['new'],
-    sale: '[10%]'
-  },
-  {
-    id: 'woman-sling-bag-red',
-    title: 'Red Sling Bag for Women',
-    image: 'https://m.media-amazon.com/images/I/61mPrCYoR7L._AC_UY1100_.jpg',
-    price: 1199,
-    gender: 'female',
-    age: 'adult',
-    tags: ['popular'],
-    sale: '[15%]'
-  },
-  {
-    id: 'man-messenger-bag',
-    title: 'Mens Brown Messenger Bag',
-    image: 'https://m.media-amazon.com/images/I/61+Z5b8kYrL._AC_UY1100_.jpg',
-    price: 1899,
-    gender: 'male',
-    age: 'adult',
-    tags: ['trending']
-  },
-  {
-    id: 'kids-space-backpack',
-    title: 'Kids Space Adventure Backpack',
-    image: 'https://images.unsplash.com/photo-1598532163257-0bf54057d37a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 950,
-    gender: 'male',
-    age: 'child',
-    tags: ['popular', 'new'],
-    sale: '[15%]'
-  },
-  {
-    id: 'teen-girl-pink-sling',
-    title: 'Teen Girl Pink Sling Bag',
-    image: 'https://images.pexels.com/photos/934070/pexels-photo-934070.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1299,
-    gender: 'female',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[20%]'
-  },
-  {
-    id: 'adult-man-duffel',
-    title: 'Adult Man Sports Duffel',
-    image: 'https://m.media-amazon.com/images/I/71kLmNp2ZqL._AC_UY1100_.jpg',
-    price: 1799,
-    gender: 'male',
-    age: 'adult',
-    tags: ['popular']
-  },
-  {
-    id: 'elder-woman-floral',
-    title: 'Elder Woman Floral Handbag',
-    image: 'https://images.unsplash.com/photo-1594224457816-29f4c435ef23?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 2299,
-    gender: 'female',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-superhero-bag',
-    title: 'Kids Superhero Backpack',
-    image: 'https://m.media-amazon.com/images/I/61zXy7qP9uL._AC_UY1100_.jpg',
-    price: 899,
-    gender: 'male',
-    age: 'child',
-    tags: ['trending'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-boy-blue',
-    title: 'Teen Boy Blue Backpack',
-    image: 'https://images.pexels.com/photos/2900997/pexels-photo-2900997.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1499,
-    gender: 'male',
-    age: 'teen',
-    tags: ['popular', 'new'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-clutch',
-    title: 'Adult Woman Evening Clutch',
-    image: 'https://m.media-amazon.com/images/I/61vRt6qY8xL._AC_UY1100_.jpg',
-    price: 999,
-    gender: 'female',
-    age: 'adult',
-    tags: ['trending'],
-    sale: '[25%]'
-  },
-  {
-    id: 'unisex-travel-duffel',
-    title: 'Unisex Travel Duffel Bag',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1999,
-    gender: 'unisex',
-    age: 'adult',
-    tags: ['popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'elder-man-briefcase',
-    title: 'Elder Man Classic Briefcase',
-    image: 'https://m.media-amazon.com/images/I/61xUz8qZ0vL._AC_UY1100_.jpg',
-    price: 3999,
-    gender: 'male',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-princess-bag',
-    title: 'Kids Princess Sparkle Bag',
-    image: 'https://images.pexels.com/photos/934069/pexels-photo-934069.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 799,
-    gender: 'female',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-unisex-casual',
-    title: 'Unisex Teen Casual Backpack',
-    image: 'https://m.media-amazon.com/images/I/61yVz0qA2wL._AC_UY1100_.jpg',
-    price: 1199,
-    gender: 'unisex',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-backpack',
-    title: 'Adult Woman Stylish Backpack',
-    image: 'https://images.unsplash.com/photo-1594224457816-29f4c435ef23?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 2399,
-    gender: 'female',
-    age: 'adult',
-    tags: ['new']
-  },
-  {
-    id: 'kids-animal-bag',
-    title: 'Kids Animal Print Bag',
-    image: 'https://m.media-amazon.com/images/I/61tUz7qC4vL._AC_UY1100_.jpg',
-    price: 850,
-    gender: 'unisex',
-    age: 'child',
-    tags: ['new'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-girl-tote',
-    title: 'Teen Girl Trendy Tote',
-    image: 'https://images.pexels.com/photos/934070/pexels-photo-934070.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1399,
-    gender: 'female',
-    age: 'teen',
-    tags: ['popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'adult-man-sling',
-    title: 'Adult Man Urban Sling',
-    image: 'https://m.media-amazon.com/images/I/61xXy9qE6yL._AC_UY1100_.jpg',
-    price: 1699,
-    gender: 'male',
-    age: 'adult',
-    tags: ['trending']
-  },
-  {
-    id: 'elder-woman-tote',
-    title: 'Elder Woman Elegant Tote',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 2599,
-    gender: 'female',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-robot-bag',
-    title: 'Kids Robot Adventure Bag',
-    image: 'https://m.media-amazon.com/images/I/61zVz1qG8uL._AC_UY1100_.jpg',
-    price: 899,
-    gender: 'male',
-    age: 'child',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'teen-boy-sports',
-    title: 'Teen Boy Sports Backpack',
-    image: 'https://images.pexels.com/photos/2900997/pexels-photo-2900997.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1599,
-    gender: 'male',
-    age: 'teen',
-    tags: ['popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'adult-woman-satchel',
-    title: 'Adult Woman Satchel Bag',
-    image: 'https://m.media-amazon.com/images/I/61tXy3qJ0wL._AC_UY1100_.jpg',
-    price: 2799,
-    gender: 'female',
-    age: 'adult',
-    tags: ['new']
-  },
-  {
-    id: 'unisex-laptop-backpack',
-    title: 'Unisex Laptop Backpack',
-    image: 'https://images.unsplash.com/photo-1598532163257-0bf54057d37a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1899,
-    gender: 'unisex',
-    age: 'adult',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'elder-man-sling',
-    title: 'Elder Man Compact Sling',
-    image: 'https://m.media-amazon.com/images/I/61xWz5qM2yL._AC_UY1100_.jpg',
-    price: 1999,
-    gender: 'male',
-    age: 'elder',
-    tags: []
-  },
-  {
-    id: 'kids-fairy-bag',
-    title: 'Kids Fairy Magic Bag',
-    image: 'https://images.pexels.com/photos/934069/pexels-photo-934069.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 799,
-    gender: 'female',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-girl-glitter',
-    title: 'Teen Girl Glitter Sling',
-    image: 'https://m.media-amazon.com/images/I/61tUz8qP4vL._AC_UY1100_.jpg',
-    price: 1099,
-    gender: 'female',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[20%]'
-  },
-  {
-    id: 'adult-man-backpack',
-    title: 'Adult Man Tactical Backpack',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 2299,
-    gender: 'male',
-    age: 'adult',
-    tags: ['new']
-  },
-  {
-    id: 'elder-woman-clutch',
-    title: 'Elder Woman Velvet Clutch',
-    image: 'https://m.media-amazon.com/images/I/61vWz0qT6yL._AC_UY1100_.jpg',
-    price: 1799,
-    gender: 'female',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-car-bag',
-    title: 'Kids Racing Car Bag',
-    image: 'https://images.pexels.com/photos/2900997/pexels-photo-2900997.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 849,
-    gender: 'male',
-    age: 'child',
-    tags: ['new'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-unisex-sling',
-    title: 'Unisex Teen Urban Sling',
-    image: 'https://m.media-amazon.com/images/I/61xXy0qW9vL._AC_UY1100_.jpg',
-    price: 1299,
-    gender: 'unisex',
-    age: 'teen',
-    tags: ['popular'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-hobo',
-    title: 'Adult Woman Hobo Bag',
-    image: 'https://images.unsplash.com/photo-1594224457816-29f4c435ef23?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 2699,
-    gender: 'female',
-    age: 'adult',
-    tags: ['trending']
-  },
-  {
-    id: 'elder-man-messenger',
-    title: 'Elder Man Messenger Bag',
-    image: 'https://m.media-amazon.com/images/I/61yWz4qZ1xL._AC_UY1100_.jpg',
-    price: 2999,
-    gender: 'male',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-mermaid-bag',
-    title: 'Kids Mermaid Sparkle Bag',
-    image: 'https://images.pexels.com/photos/934070/pexels-photo-934070.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 899,
-    gender: 'female',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-boy-laptop',
-    title: 'Teen Boy Laptop Backpack',
-    image: 'https://m.media-amazon.com/images/I/61vUz5qC3zL._AC_UY1100_.jpg',
-    price: 1699,
-    gender: 'male',
-    age: 'teen',
-    tags: ['new'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-mini',
-    title: 'Adult Woman Mini Crossbody',
-    image: 'https://images.unsplash.com/photo-1598532163257-0bf54057d37a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1499,
-    gender: 'female',
-    age: 'adult',
-    tags: ['trending'],
-    sale: '[20%]'
-  },
-  {
-    id: 'unisex-gym-backpack',
-    title: 'Unisex Gym Backpack',
-    image: 'https://m.media-amazon.com/images/I/61xWz6qI5xL._AC_UY1100_.jpg',
-    price: 1799,
-    gender: 'unisex',
-    age: 'adult',
-    tags: ['popular']
-  },
-  {
-    id: 'elder-woman-sling',
-    title: 'Elder Woman Sling Bag',
-    image: 'https://images.pexels.com/photos/934069/pexels-photo-934069.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1899,
-    gender: 'female',
-    age: 'elder',
-    tags: []
-  },
-  {
-    id: 'kids-rocket-bag',
-    title: 'Kids Rocket Ship Bag',
-    image: 'https://m.media-amazon.com/images/I/61tUz9qM7vL._AC_UY1100_.jpg',
-    price: 799,
-    gender: 'male',
-    age: 'child',
-    tags: ['trending'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-girl-backpack',
-    title: 'Teen Girl Stylish Backpack',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1399,
-    gender: 'female',
-    age: 'teen',
-    tags: ['popular'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-man-briefcase',
-    title: 'Adult Man Formal Briefcase',
-    image: 'https://m.media-amazon.com/images/I/61vWz1qR9xL._AC_UY1100_.jpg',
-    price: 3499,
-    gender: 'male',
-    age: 'adult',
-    tags: ['limited']
-  },
-  {
-    id: 'elder-woman-backpack',
-    title: 'Elder Woman Lightweight Backpack',
-    image: 'https://images.pexels.com/photos/2900997/pexels-photo-2900997.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 2199,
-    gender: 'female',
-    age: 'elder',
-    tags: ['new']
-  },
-  {
-    id: 'kids-butterfly-bag',
-    title: 'Kids Butterfly Print Bag',
-    image: 'https://m.media-amazon.com/images/I/61xXy4qV1zL._AC_UY1100_.jpg',
-    price: 849,
-    gender: 'female',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-unisex-duffel',
-    title: 'Unisex Teen Duffel Bag',
-    image: 'https://images.unsplash.com/photo-1594224457816-29f4c435ef23?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1499,
-    gender: 'unisex',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[20%]'
-  },
-  {
-    id: 'adult-woman-leather',
-    title: 'Adult Woman Leather Satchel',
-    image: 'https://m.media-amazon.com/images/I/61yWz8qA3vL._AC_UY1100_.jpg',
-    price: 3999,
-    gender: 'female',
-    age: 'adult',
-    tags: ['limited'],
-    sale: '[17%]'
-  },
-  {
-    id: 'elder-man-backpack',
-    title: 'Elder Man Casual Backpack',
-    image: 'https://images.pexels.com/photos/934070/pexels-photo-934070.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 2499,
-    gender: 'male',
-    age: 'elder',
-    tags: ['new']
-  },
-  {
-    id: 'kids-star-backpack',
-    title: 'Kids Starry Night Backpack',
-    image: 'https://www.freepik.com/free-photo/child-backpack_12345678.jpg#uuid=12345678-1234-5678-1234-567812345678',
-    price: 899,
-    gender: 'unisex',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[15%]'
-  },
-  {
-    id: 'teen-boy-grey-sling',
-    title: 'Teen Boy Grey Sling Bag',
-    image: 'https://m.media-amazon.com/images/I/71aBcXy5KjL._AC_UY1100_.jpg',
-    price: 1199,
-    gender: 'male',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[20%]'
-  },
-  {
-    id: 'adult-woman-quilted',
-    title: 'Adult Woman Quilted Tote',
-    image: 'https://images.unsplash.com/photo-1598532163257-0bf54057d37a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 2899,
-    gender: 'female',
-    age: 'adult',
-    tags: ['new']
-  },
-  {
-    id: 'elder-man-duffel',
-    title: 'Elder Man Travel Duffel',
-    image: 'https://m.media-amazon.com/images/I/61bCdXy6LmL._AC_UY1100_.jpg',
-    price: 2699,
-    gender: 'male',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-panda-bag',
-    title: 'Kids Panda Print Bag',
-    image: 'https://www.pexels.com/photo/adorable-panda-backpack-934071/',
-    price: 799,
-    gender: 'unisex',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-girl-purple',
-    title: 'Teen Girl Purple Backpack',
-    image: 'https://m.media-amazon.com/images/I/71cDeYz7MnL._AC_UY1100_.jpg',
-    price: 1499,
-    gender: 'female',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-man-casual',
-    title: 'Adult Man Casual Messenger',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1999,
-    gender: 'male',
-    age: 'adult',
-    tags: ['popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'elder-woman-mini',
-    title: 'Elder Woman Mini Handbag',
-    image: 'https://www.freepik.com/free-photo/elegant-handbag_12345679.jpg#uuid=12345679-1234-5678-1234-567812345679',
-    price: 1799,
-    gender: 'female',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-truck-bag',
-    title: 'Kids Monster Truck Bag',
-    image: 'https://m.media-amazon.com/images/I/61dEfUz8NpL._AC_UY1100_.jpg',
-    price: 849,
-    gender: 'male',
-    age: 'child',
-    tags: ['new'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-unisex-blue',
-    title: 'Unisex Teen Blue Duffel',
-    image: 'https://images.pexels.com/photos/2900997/pexels-photo-2900997.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1599,
-    gender: 'unisex',
-    age: 'teen',
-    tags: ['popular'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-velvet',
-    title: 'Adult Woman Velvet Tote',
-    image: 'https://m.media-amazon.com/images/I/71eFgVz9PqL._AC_UY1100_.jpg',
-    price: 2599,
-    gender: 'female',
-    age: 'adult',
-    tags: ['trending']
-  },
-  {
-    id: 'elder-man-laptop',
-    title: 'Elder Man Laptop Briefcase',
-    image: 'https://images.unsplash.com/photo-1594224457816-29f4c435ef23?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 3299,
-    gender: 'male',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-flower-bag',
-    title: 'Kids Flower Power Bag',
-    image: 'https://www.pexels.com/photo/floral-backpack-934072/',
-    price: 799,
-    gender: 'female',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-boy-green',
-    title: 'Teen Boy Green Backpack',
-    image: 'https://m.media-amazon.com/images/I/61fGhWz0RrL._AC_UY1100_.jpg',
-    price: 1399,
-    gender: 'male',
-    age: 'teen',
-    tags: ['new'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-crossbody',
-    title: 'Adult Woman Crossbody Bag',
-    image: 'https://images.unsplash.com/photo-1598532163257-0bf54057d37a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1699,
-    gender: 'female',
-    age: 'adult',
-    tags: ['trending'],
-    sale: '[20%]'
-  },
-  {
-    id: 'unisex-adventure-bag',
-    title: 'Unisex Adventure Backpack',
-    image: 'https://m.media-amazon.com/images/I/71hIjXy1StL._AC_UY1100_.jpg',
-    price: 2099,
-    gender: 'unisex',
-    age: 'adult',
-    tags: ['popular']
-  },
-  {
-    id: 'elder-woman-satchel',
-    title: 'Elder Woman Satchel Bag',
-    image: 'https://www.freepik.com/free-photo/satchel-bag_12345680.jpg#uuid=12345680-1234-5678-1234-567812345680',
-    price: 2399,
-    gender: 'female',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-space-ship-bag',
-    title: 'Kids Spaceship Backpack',
-    image: 'https://m.media-amazon.com/images/I/61jKlYz2TuL._AC_UY1100_.jpg',
-    price: 899,
-    gender: 'male',
-    age: 'child',
-    tags: ['trending'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-girl-velvet',
-    title: 'Teen Girl Velvet Sling',
-    image: 'https://images.pexels.com/photos/934070/pexels-photo-934070.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1199,
-    gender: 'female',
-    age: 'teen',
-    tags: ['popular'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-man-travel',
-    title: 'Adult Man Travel Sling',
-    image: 'https://m.media-amazon.com/images/I/71kLmXy3UvL._AC_UY1100_.jpg',
-    price: 1799,
-    gender: 'male',
-    age: 'adult',
-    tags: ['new']
-  },
-  {
-    id: 'elder-man-tote',
-    title: 'Elder Man Canvas Tote',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 2599,
-    gender: 'male',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-rainbow-bag',
-    title: 'Kids Rainbow Backpack',
-    image: 'https://www.pexels.com/photo/rainbow-backpack-934073/',
-    price: 849,
-    gender: 'unisex',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-unisex-laptop',
-    title: 'Unisex Teen Laptop Bag',
-    image: 'https://m.media-amazon.com/images/I/61mNpYz4VwL._AC_UY1100_.jpg',
-    price: 1599,
-    gender: 'unisex',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-floral',
-    title: 'Adult Woman Floral Tote',
-    image: 'https://images.unsplash.com/photo-1594224457816-29f4c435ef23?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 2799,
-    gender: 'female',
-    age: 'adult',
-    tags: ['new']
-  },
-  {
-    id: 'elder-woman-crossbody',
-    title: 'Elder Woman Crossbody Bag',
-    image: 'https://m.media-amazon.com/images/I/71pQrYz5WxL._AC_UY1100_.jpg',
-    price: 1999,
-    gender: 'female',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-dinosaur-bag',
-    title: 'Kids Dinosaur Adventure Bag',
-    image: 'https://www.freepik.com/free-photo/dinosaur-backpack_12345681.jpg#uuid=12345681-1234-5678-1234-567812345681',
-    price: 799,
-    gender: 'male',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-boy-duffel',
-    title: 'Teen Boy Sports Duffel',
-    image: 'https://images.pexels.com/photos/2900997/pexels-photo-2900997.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1499,
-    gender: 'male',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-clutch-gold',
-    title: 'Adult Woman Gold Clutch',
-    image: 'https://m.media-amazon.com/images/I/61rStYz6XyL._AC_UY1100_.jpg',
-    price: 1099,
-    gender: 'female',
-    age: 'adult',
-    tags: ['popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'unisex-casual-backpack',
-    title: 'Unisex Casual Backpack',
-    image: 'https://images.unsplash.com/photo-1598532163257-0bf54057d37a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1899,
-    gender: 'unisex',
-    age: 'adult',
-    tags: ['new']
-  },
-  {
-    id: 'elder-man-travel',
-    title: 'Elder Man Travel Backpack',
-    image: 'https://m.media-amazon.com/images/I/71tUvYz7ZzL._AC_UY1100_.jpg',
-    price: 2399,
-    gender: 'male',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-owl-bag',
-    title: 'Kids Owl Print Bag',
-    image: 'https://www.pexels.com/photo/owl-backpack-934074/',
-    price: 849,
-    gender: 'unisex',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-girl-blue-sling',
-    title: 'Teen Girl Blue Sling Bag',
-    image: 'https://m.media-amazon.com/images/I/61vWxYz8AaL._AC_UY1100_.jpg',
-    price: 1199,
-    gender: 'female',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-man-work-bag',
-    title: 'Adult Man Work Briefcase',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 2999,
-    gender: 'male',
-    age: 'adult',
-    tags: ['limited']
-  },
-  {
-    id: 'elder-woman-velvet-tote',
-    title: 'Elder Woman Velvet Tote',
-    image: 'https://www.freepik.com/free-photo/velvet-tote_12345682.jpg#uuid=12345682-1234-5678-1234-567812345682',
-    price: 2599,
-    gender: 'female',
-    age: 'elder',
-    tags: ['new']
-  },
-  {
-    id: 'kids-pirate-bag',
-    title: 'Kids Pirate Adventure Bag',
-    image: 'https://m.media-amazon.com/images/I/71yXzYz9BbL._AC_UY1100_.jpg',
-    price: 799,
-    gender: 'male',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-unisex-grey',
-    title: 'Unisex Teen Grey Backpack',
-    image: 'https://images.pexels.com/photos/934070/pexels-photo-934070.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1399,
-    gender: 'unisex',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-mini-tote',
-    title: 'Adult Woman Mini Tote',
-    image: 'https://m.media-amazon.com/images/I/61zYyAz0CcL._AC_UY1100_.jpg',
-    price: 1699,
-    gender: 'female',
-    age: 'adult',
-    tags: ['popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'elder-man-sling-grey',
-    title: 'Elder Man Grey Sling',
-    image: 'https://images.unsplash.com/photo-1594224457816-29f4c435ef23?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1999,
-    gender: 'male',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-rocket-backpack',
-    title: 'Kids Rocket Backpack',
-    image: 'https://www.pexels.com/photo/rocket-backpack-934075/',
-    price: 899,
-    gender: 'unisex',
-    age: 'child',
-    tags: ['new'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-boy-black-backpack',
-    title: 'Teen Boy Black Backpack',
-    image: 'https://m.media-amazon.com/images/I/71aBcXy5KjL._AC_UY1100_.jpg',
-    price: 1499,
-    gender: 'male',
-    age: 'teen',
-    tags: ['popular'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-eco-bag',
-    title: 'Adult Woman Eco Canvas Bag',
-    image: 'https://images.unsplash.com/photo-1598532163257-0bf54057d37a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1899,
-    gender: 'female',
-    age: 'adult',
-    tags: ['trending'],
-    sale: '[20%]'
-  },
-  {
-    id: 'elder-woman-floral-sling',
-    title: 'Elder Woman Floral Sling',
-    image: 'https://www.freepik.com/free-photo/floral-sling-bag_12345683.jpg#uuid=12345683-1234-5678-1234-567812345683',
-    price: 1799,
-    gender: 'female',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-lion-bag',
-    title: 'Kids Lion Print Bag',
-    image: 'https://m.media-amazon.com/images/I/61cDeYz7MnL._AC_UY1100_.jpg',
-    price: 799,
-    gender: 'male',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-girl-pink-backpack',
-    title: 'Teen Girl Pink Backpack',
-    image: 'https://images.pexels.com/photos/2900997/pexels-photo-2900997.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1399,
-    gender: 'female',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-man-eco-duffel',
-    title: 'Adult Man Eco Duffel Bag',
-    image: 'https://m.media-amazon.com/images/I/71eFgVz9PqL._AC_UY1100_.jpg',
-    price: 2099,
-    gender: 'male',
-    age: 'adult',
-    tags: ['new']
-  },
-  {
-    id: 'unisex-travel-sling',
-    title: 'Unisex Travel Sling Bag',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1599,
-    gender: 'unisex',
-    age: 'adult',
-    tags: ['popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'elder-man-briefcase-black',
-    title: 'Elder Man Black Briefcase',
-    image: 'https://www.freepik.com/free-photo/black-briefcase_12345684.jpg#uuid=12345684-1234-5678-1234-567812345684',
-    price: 3499,
-    gender: 'male',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-unicorn-sling',
-    title: 'Kids Unicorn Sling Bag',
-    image: 'https://m.media-amazon.com/images/I/61fGhWz0RrL._AC_UY1100_.jpg',
-    price: 849,
-    gender: 'female',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-unisex-green',
-    title: 'Unisex Teen Green Sling',
-    image: 'https://images.pexels.com/photos/934070/pexels-photo-934070.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1299,
-    gender: 'unisex',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-party-clutch',
-    title: 'Adult Woman Party Clutch',
-    image: 'https://m.media-amazon.com/images/I/71hIjXy1StL._AC_UY1100_.jpg',
-    price: 999,
-    gender: 'female',
-    age: 'adult',
-    tags: ['popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'elder-woman-canvas-tote',
-    title: 'Elder Woman Canvas Tote',
-    image: 'https://images.unsplash.com/photo-1594224457816-29f4c435ef23?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 2299,
-    gender: 'female',
-    age: 'elder',
-    tags: ['new']
-  },
-  {
-    id: 'kids-space-alien-bag',
-    title: 'Kids Space Alien Bag',
-    image: 'https://www.pexels.com/photo/alien-backpack-934076/',
-    price: 799,
-    gender: 'male',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-boy-blue-duffel',
-    title: 'Teen Boy Blue Duffel Bag',
-    image: 'https://m.media-amazon.com/images/I/61jKlYz2TuL._AC_UY1100_.jpg',
-    price: 1599,
-    gender: 'male',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-man-canvas-backpack',
-    title: 'Adult Man Canvas Backpack',
-    image: 'https://images.unsplash.com/photo-1598532163257-0bf54057d37a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 2199,
-    gender: 'male',
-    age: 'adult',
-    tags: ['new']
-  },
-  {
-    id: 'elder-woman-mini-sling',
-    title: 'Elder Woman Mini Sling',
-    image: 'https://www.freepik.com/free-photo/mini-sling-bag_12345685.jpg#uuid=12345685-1234-5678-1234-567812345685',
-    price: 1799,
-    gender: 'female',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-tiger-bag',
-    title: 'Kids Tiger Print Bag',
-    image: 'https://m.media-amazon.com/images/I/71kLmXy3UvL._AC_UY1100_.jpg',
-    price: 849,
-    gender: 'unisex',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-girl-floral-sling',
-    title: 'Teen Girl Floral Sling Bag',
-    image: 'https://images.pexels.com/photos/2900997/pexels-photo-2900997.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1199,
-    gender: 'female',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-luxury-tote',
-    title: 'Adult Woman Luxury Tote',
-    image: 'https://m.media-amazon.com/images/I/61mNpYz4VwL._AC_UY1100_.jpg',
-    price: 3999,
-    gender: 'female',
-    age: 'adult',
-    tags: ['limited'],
-    sale: '[17%]'
-  },
-  {
-    id: 'unisex-work-backpack',
-    title: 'Unisex Work Backpack',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1999,
-    gender: 'unisex',
-    age: 'adult',
-    tags: ['new'],
-    sale: '[20%]'
-  },
-  {
-    id: 'elder-man-canvas-sling',
-    title: 'Elder Man Canvas Sling',
-    image: 'https://www.pexels.com/photo/canvas-sling-934077/',
-    price: 1899,
-    gender: 'male',
-    age: 'elder',
-    tags: ['popular']
-  },
-  {
-    id: 'kids-galaxy-backpack',
-    title: 'Kids Galaxy Print Backpack',
-    image: 'https://www.freepik.com/free-photo/galaxy-backpack_12345686.jpg#uuid=12345686-1234-5678-1234-567812345686',
-    price: 899,
-    gender: 'unisex',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-boy-red-sling',
-    title: 'Teen Boy Red Sling Bag',
-    image: 'https://m.media-amazon.com/images/I/71aCdXy6LmL._AC_UY1100_.jpg',
-    price: 1199,
-    gender: 'male',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-suede-tote',
-    title: 'Adult Woman Suede Tote',
-    image: 'https://images.unsplash.com/photo-1594224457816-29f4c435ef23?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 2999,
-    gender: 'female',
-    age: 'adult',
-    tags: ['new']
-  },
-  {
-    id: 'elder-man-leather-sling',
-    title: 'Elder Man Leather Sling',
-    image: 'https://m.media-amazon.com/images/I/61bEfYz7NpL._AC_UY1100_.jpg',
-    price: 2699,
-    gender: 'male',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-bear-bag',
-    title: 'Kids Bear Print Bag',
-    image: 'https://www.pexels.com/photo/bear-backpack-934078/',
-    price: 799,
-    gender: 'unisex',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-girl-yellow-backpack',
-    title: 'Teen Girl Yellow Backpack',
-    image: 'https://m.media-amazon.com/images/I/71cFgVz8PqL._AC_UY1100_.jpg',
-    price: 1499,
-    gender: 'female',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-man-sport-backpack',
-    title: 'Adult Man Sport Backpack',
-    image: 'https://images.unsplash.com/photo-1598532163257-0bf54057d37a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1999,
-    gender: 'male',
-    age: 'adult',
-    tags: ['popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'elder-woman-quilted-handbag',
-    title: 'Elder Woman Quilted Handbag',
-    image: 'https://www.freepik.com/free-photo/quilted-handbag_12345687.jpg#uuid=12345687-1234-5678-1234-567812345687',
-    price: 2299,
-    gender: 'female',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-plane-bag',
-    title: 'Kids Airplane Adventure Bag',
-    image: 'https://m.media-amazon.com/images/I/61dGhUz9RrL._AC_UY1100_.jpg',
-    price: 849,
-    gender: 'male',
-    age: 'child',
-    tags: ['new'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-unisex-red-duffel',
-    title: 'Unisex Teen Red Duffel',
-    image: 'https://images.pexels.com/photos/2900997/pexels-photo-2900997.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1599,
-    gender: 'unisex',
-    age: 'teen',
-    tags: ['popular'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-sequin-clutch',
-    title: 'Adult Woman Sequin Clutch',
-    image: 'https://m.media-amazon.com/images/I/71eIjXy2StL._AC_UY1100_.jpg',
-    price: 1099,
-    gender: 'female',
-    age: 'adult',
-    tags: ['trending'],
-    sale: '[20%]'
-  },
-  {
-    id: 'elder-man-work-briefcase',
-    title: 'Elder Man Work Briefcase',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 3499,
-    gender: 'male',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-zebra-bag',
-    title: 'Kids Zebra Print Bag',
-    image: 'https://www.pexels.com/photo/zebra-backpack-934079/',
-    price: 799,
-    gender: 'unisex',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-boy-orange-backpack',
-    title: 'Teen Boy Orange Backpack',
-    image: 'https://m.media-amazon.com/images/I/61fJhWz1SrL._AC_UY1100_.jpg',
-    price: 1399,
-    gender: 'male',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-canvas-tote',
-    title: 'Adult Woman Canvas Tote',
-    image: 'https://images.unsplash.com/photo-1594224457816-29f4c435ef23?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1899,
-    gender: 'female',
-    age: 'adult',
-    tags: ['popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'elder-woman-leather-handbag',
-    title: 'Elder Woman Leather Handbag',
-    image: 'https://www.freepik.com/free-photo/leather-handbag_12345688.jpg#uuid=12345688-1234-5678-1234-567812345688',
-    price: 2799,
-    gender: 'female',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-robot-backpack',
-    title: 'Kids Robot Print Backpack',
-    image: 'https://m.media-amazon.com/images/I/71yYzXz0CcL._AC_UY1100_.jpg',
-    price: 849,
-    gender: 'male',
-    age: 'child',
-    tags: ['new'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-girl-green-sling',
-    title: 'Teen Girl Green Sling Bag',
-    image: 'https://images.pexels.com/photos/934070/pexels-photo-934070.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1199,
-    gender: 'female',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-man-leather-backpack',
-    title: 'Adult Man Leather Backpack',
-    image: 'https://m.media-amazon.com/images/I/61aCdXy6LmL._AC_UY1100_.jpg',
-    price: 2999,
-    gender: 'male',
-    age: 'adult',
-    tags: ['limited']
-  },
-  {
-    id: 'elder-woman-mini-tote',
-    title: 'Elder Woman Mini Tote',
-    image: 'https://images.unsplash.com/photo-1598532163257-0bf54057d37a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1999,
-    gender: 'female',
-    age: 'elder',
-    tags: ['new']
-  },
-  {
-    id: 'kids-elephant-bag',
-    title: 'Kids Elephant Print Bag',
-    image: 'https://www.pexels.com/photo/elephant-backpack-934080/',
-    price: 799,
-    gender: 'unisex',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-unisex-orange-sling',
-    title: 'Unisex Teen Orange Sling',
-    image: 'https://m.media-amazon.com/images/I/71cFgVz8PqL._AC_UY1100_.jpg',
-    price: 1299,
-    gender: 'unisex',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-patterned-tote',
-    title: 'Adult Woman Patterned Tote',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 2299,
-    gender: 'female',
-    age: 'adult',
-    tags: ['popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'elder-man-sport-duffel',
-    title: 'Elder Man Sport Duffel',
-    image: 'https://www.freepik.com/free-photo/sport-duffel_12345689.jpg#uuid=12345689-1234-5678-1234-567812345689',
-    price: 2599,
-    gender: 'male',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-giraffe-bag',
-    title: 'Kids Giraffe Print Bag',
-    image: 'https://m.media-amazon.com/images/I/61dGhUz9RrL._AC_UY1100_.jpg',
-    price: 849,
-    gender: 'unisex',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-boy-green-duffel',
-    title: 'Teen Boy Green Duffel Bag',
-    image: 'https://images.pexels.com/photos/2900997/pexels-photo-2900997.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1599,
-    gender: 'male',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-silk-clutch',
-    title: 'Adult Woman Silk Clutch',
-    image: 'https://m.media-amazon.com/images/I/71eIjXy2StL._AC_UY1100_.jpg',
-    price: 1099,
-    gender: 'female',
-    age: 'adult',
-    tags: ['popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'unisex-urban-backpack',
-    title: 'Unisex Urban Backpack',
-    image: 'https://images.unsplash.com/photo-1594224457816-29f4c435ef23?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1899,
-    gender: 'unisex',
-    age: 'adult',
-    tags: ['new']
-  },
-  {
-    id: 'elder-man-leather-briefcase',
-    title: 'Elder Man Leather Briefcase',
-    image: 'https://www.freepik.com/free-photo/leather-briefcase_12345690.jpg#uuid=12345690-1234-5678-1234-567812345690',
-    price: 3499,
-    gender: 'male',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-flamingo-bag',
-    title: 'Kids Flamingo Print Bag',
-    image: 'https://m.media-amazon.com/images/I/61fJhWz1SrL._AC_UY1100_.jpg',
-    price: 799,
-    gender: 'female',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-girl-red-sling',
-    title: 'Teen Girl Red Sling Bag',
-    image: 'https://images.pexels.com/photos/934070/pexels-photo-934070.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1199,
-    gender: 'female',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-man-travel-duffel',
-    title: 'Adult Man Travel Duffel',
-    image: 'https://m.media-amazon.com/images/I/71yYzXz0CcL._AC_UY1100_.jpg',
-    price: 2299,
-    gender: 'male',
-    age: 'adult',
-    tags: ['popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'elder-woman-suede-handbag',
-    title: 'Elder Woman Suede Handbag',
-    image: 'https://images.unsplash.com/photo-1598532163257-0bf54057d37a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 2699,
-    gender: 'female',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-astronaut-bag',
-    title: 'Kids Astronaut Backpack',
-    image: 'https://www.pexels.com/photo/astronaut-backpack-934081/',
-    price: 849,
-    gender: 'male',
-    age: 'child',
-    tags: ['new'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-unisex-yellow-sling',
-    title: 'Unisex Teen Yellow Sling',
-    image: 'https://m.media-amazon.com/images/I/61aCdXy6LmL._AC_UY1100_.jpg',
-    price: 1299,
-    gender: 'unisex',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-eco-tote',
-    title: 'Adult Woman Eco Tote',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1899,
-    gender: 'female',
-    age: 'adult',
-    tags: ['popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'elder-man-canvas-backpack',
-    title: 'Elder Man Canvas Backpack',
-    image: 'https://www.freepik.com/free-photo/canvas-backpack_12345691.jpg#uuid=12345691-1234-5678-1234-567812345691',
-    price: 2399,
-    gender: 'male',
-    age: 'elder',
-    tags: ['new']
-  },
-  {
-    id: 'kids-penguin-bag',
-    title: 'Kids Penguin Print Bag',
-    image: 'https://m.media-amazon.com/images/I/71cFgVz8PqL._AC_UY1100_.jpg',
-    price: 799,
-    gender: 'unisex',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-boy-yellow-backpack',
-    title: 'Teen Boy Yellow Backpack',
-    image: 'https://images.pexels.com/photos/2900997/pexels-photo-2900997.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1399,
-    gender: 'male',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-leather-clutch',
-    title: 'Adult Woman Leather Clutch',
-    image: 'https://m.media-amazon.com/images/I/61eIjXy2StL._AC_UY1100_.jpg',
-    price: 1099,
-    gender: 'female',
-    age: 'adult',
-    tags: ['popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'unisex-sport-backpack',
-    title: 'Unisex Sport Backpack',
-    image: 'https://images.unsplash.com/photo-1594224457816-29f4c435ef23?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1999,
-    gender: 'unisex',
-    age: 'adult',
-    tags: ['new']
-  },
-  {
-    id: 'elder-woman-patterned-handbag',
-    title: 'Elder Woman Patterned Handbag',
-    image: 'https://www.freepik.com/free-photo/patterned-handbag_12345692.jpg#uuid=12345692-1234-5678-1234-567812345692',
-    price: 2599,
-    gender: 'female',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-rocket-sling',
-    title: 'Kids Rocket Sling Bag',
-    image: 'https://m.media-amazon.com/images/I/61fJhWz1SrL._AC_UY1100_.jpg',
-    price: 799,
-    gender: 'male',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-girl-orange-sling',
-    title: 'Teen Girl Orange Sling Bag',
-    image: 'https://images.pexels.com/photos/934070/pexels-photo-934070.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1199,
-    gender: 'female',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-man-urban-duffel',
-    title: 'Adult Man Urban Duffel',
-    image: 'https://m.media-amazon.com/images/I/71yYzXz0CcL._AC_UY1100_.jpg',
-    price: 2299,
-    gender: 'male',
-    age: 'adult',
-    tags: ['popular'],
-    sale: '[20%]'
-  },
-  {
-    id: 'elder-woman-canvas-sling',
-    title: 'Elder Woman Canvas Sling',
-    image: 'https://images.unsplash.com/photo-1598532163257-0bf54057d37a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 1899,
-    gender: 'female',
-    age: 'elder',
-    tags: ['new']
-  },
-  {
-    id: 'kids-dolphin-bag',
-    title: 'Kids Dolphin Print Bag',
-    image: 'https://www.pexels.com/photo/dolphin-backpack-934082/',
-    price: 799,
-    gender: 'unisex',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-unisex-blue-backpack',
-    title: 'Unisex Teen Blue Backpack',
-    image: 'https://m.media-amazon.com/images/I/61aCdXy6LmL._AC_UY1100_.jpg',
-    price: 1499,
-    gender: 'unisex',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-velvet-handbag',
-    title: 'Adult Woman Velvet Handbag',
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 2599,
-    gender: 'female',
-    age: 'adult',
-    tags: ['limited']
-  },
-  {
-    id: 'elder-man-urban-backpack',
-    title: 'Elder Man Urban Backpack',
-    image: 'https://www.freepik.com/free-photo/urban-backpack_12345693.jpg#uuid=12345693-1234-5678-1234-567812345693',
-    price: 2399,
-    gender: 'male',
-    age: 'elder',
-    tags: ['new']
-  },
-  {
-    id: 'kids-unicorn-backpack',
-    title: 'Kids Unicorn Print Backpack',
-    image: 'https://m.media-amazon.com/images/I/71cFgVz8PqL._AC_UY1100_.jpg',
-    price: 849,
-    gender: 'female',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-boy-red-backpack',
-    title: 'Teen Boy Red Backpack',
-    image: 'https://images.pexels.com/photos/2900997/pexels-photo-2900997.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1399,
-    gender: 'male',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-woman-suede-backpack',
-    title: 'Adult Woman Suede Backpack',
-    image: 'https://m.media-amazon.com/images/I/61eIjXy2StL._AC_UY1100_.jpg',
-    price: 2799,
-    gender: 'female',
-    age: 'adult',
-    tags: ['new']
-  },
-  {
-    id: 'elder-woman-leather-sling',
-    title: 'Elder Woman Leather Sling',
-    image: 'https://www.freepik.com/free-photo/leather-sling_12345694.jpg#uuid=12345694-1234-5678-1234-567812345694',
-    price: 1999,
-    gender: 'female',
-    age: 'elder',
-    tags: ['limited']
-  },
-  {
-    id: 'kids-shark-bag',
-    title: 'Kids Shark Print Bag',
-    image: 'https://m.media-amazon.com/images/I/71yYzXz0CcL._AC_UY1100_.jpg',
-    price: 799,
-    gender: 'male',
-    age: 'child',
-    tags: ['popular'],
-    sale: '[10%]'
-  },
-  {
-    id: 'teen-girl-blue-backpack',
-    title: 'Teen Girl Blue Backpack',
-    image: 'https://images.pexels.com/photos/934070/pexels-photo-934070.jpeg?auto=compress&cs=tinysrgb&w=800',
-    price: 1399,
-    gender: 'female',
-    age: 'teen',
-    tags: ['trending'],
-    sale: '[15%]'
-  },
-  {
-    id: 'adult-man-eco-backpack',
-    title: 'Adult Man Eco Backpack',
-    image: 'https://images.unsplash.com/photo-1598532163257-0bf54057d37a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60',
-    price: 2099,
-    gender: 'male',
-    age: 'adult',
-    tags: ['popular'],
-    sale: '[20%]'
+// ─── Inline Schemas (so seed runs standalone) ───────────────────────────────
+
+const categorySchema = new mongoose.Schema(
+  {
+    name:        { type: String, required: true, unique: true },
+    slug:        { type: String, unique: true },
+    image:       String,
+    description: String,
+    sortOrder:   { type: Number, default: 0 },
+    isFeatured:  { type: Boolean, default: false },
+    status:      { type: String, enum: ['Active', 'Inactive'], default: 'Active' },
+  },
+  { timestamps: true }
+);
+
+const collectionSchema = new mongoose.Schema(
+  {
+    name:        { type: String, required: true, unique: true },
+    slug:        { type: String, unique: true },
+    banner:      String,
+    description: String,
+    status:      { type: String, enum: ['Active', 'Inactive'], default: 'Active' },
+  },
+  { timestamps: true }
+);
+
+const variantSchema = new mongoose.Schema(
+  {
+    sku:             { type: String, trim: true },
+    size:            { type: String, enum: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Free Size', 'Custom'] },
+    color:           { type: String, trim: true },
+    colorHex:        String,
+    image:           String,
+    price:           Number,
+    discountedPrice: Number,
+    stock:           { type: Number, default: 0 },
+  },
+  { _id: false }
+);
+
+const reviewSchema = new mongoose.Schema(
+  {
+    user:    { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    rating:  { type: Number, min: 1, max: 5, required: true },
+    comment: String,
+  },
+  { timestamps: true }
+);
+
+const imageSchema = new mongoose.Schema(
+  {
+    url:       String,
+    alt:       String,
+    isPrimary: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
+const productSchema = new mongoose.Schema(
+  {
+    title:            { type: String, required: true, trim: true },
+    slug:             { type: String, unique: true, lowercase: true },
+    shortDescription: String,
+    description:      String,
+
+    category:   { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
+    collection: { type: mongoose.Schema.Types.ObjectId, ref: 'Collection' },
+    brand:      { type: String, default: 'Odhira' },
+    tags:       [String],
+
+    images: [imageSchema],
+
+    price:           { type: Number, required: true },
+    discountedPrice: Number,
+    gst:             { type: Number, default: 0 },
+
+    variants:      [variantSchema],
+    totalStock:    { type: Number, default: 0 },
+    sold:          { type: Number, default: 0 },
+    wishlistCount: { type: Number, default: 0 },
+    views:         { type: Number, default: 0 },
+
+    fabric:           String,
+    handwork:         String,
+    sleeveType:       String,
+    neckline:         String,
+    fit:              String,
+    careInstructions: String,
+    customizable:     { type: Boolean, default: false },
+    occasion:         [String],
+
+    weight: Number,
+    length: Number,
+    width:  Number,
+    height: Number,
+
+    isFeatured:  { type: Boolean, default: false },
+    isBestSeller:{ type: Boolean, default: false },
+    isNewArrival:{ type: Boolean, default: false },
+    isSale:      { type: Boolean, default: false },
+
+    status: { type: String, enum: ['Draft', 'Active', 'Inactive', 'Archived'], default: 'Draft' },
+
+    metaTitle:       String,
+    metaDescription: String,
+    metaKeywords:    [String],
+
+    lookbookImages: [String],
+    styleNotes:     String,
+
+    reviews:       [reviewSchema],
+    averageRating: { type: Number, default: 0 },
+    totalReviews:  { type: Number, default: 0 },
+  },
+  { timestamps: true }
+);
+
+productSchema.pre('save', function (next) {
+  if (!this.slug) {
+    this.slug = slugify(this.title, { lower: true, strict: true });
   }
+  if (this.variants.length) {
+    this.totalStock = this.variants.reduce((sum, v) => sum + v.stock, 0);
+  }
+  if (this.reviews.length) {
+    this.totalReviews  = this.reviews.length;
+    this.averageRating = this.reviews.reduce((sum, r) => sum + r.rating, 0) / this.reviews.length;
+  }
+  next();
+});
+
+const Category  = mongoose.model('Category',  categorySchema);
+const Collection= mongoose.model('Collection', collectionSchema);
+const Product   = mongoose.model('Product',    productSchema);
+
+// ─── Seed Data ───────────────────────────────────────────────────────────────
+
+const categoriesData = [
+  {
+    name:        'Kids Bags',
+    slug:        'kids-bags',
+    image:       'https://m.media-amazon.com/images/I/61vPyGqS0uL._AC_UY1100_.jpg',
+    description: 'Fun, colourful bags designed for children — backpacks, slings and more.',
+    sortOrder:   1,
+    isFeatured:  true,
+    status:      'Active',
+  },
+  {
+    name:        'Teen Bags',
+    slug:        'teen-bags',
+    image:       'https://m.media-amazon.com/images/I/81z5vl5YrDL._AC_UY1100_.jpg',
+    description: 'Trendy backpacks, slings and totes for teenagers.',
+    sortOrder:   2,
+    isFeatured:  true,
+    status:      'Active',
+  },
+  {
+    name:        'Women Bags',
+    slug:        'women-bags',
+    image:       'https://m.media-amazon.com/images/I/61x5q+zB0qL._AC_UY1100_.jpg',
+    description: 'Stylish totes, clutches, satchels and handbags for women.',
+    sortOrder:   3,
+    isFeatured:  true,
+    status:      'Active',
+  },
+  {
+    name:        'Men Bags',
+    slug:        'men-bags',
+    image:       'https://m.media-amazon.com/images/I/91ogt8ED2EL._AC_UY1100_.jpg',
+    description: 'Laptop bags, messenger bags, backpacks and duffels for men.',
+    sortOrder:   4,
+    isFeatured:  false,
+    status:      'Active',
+  },
+  {
+    name:        'Unisex Bags',
+    slug:        'unisex-bags',
+    image:       'https://m.media-amazon.com/images/I/71LGukjcZeL._AC_UY1100_.jpg',
+    description: 'Gender-neutral bags for everyday use.',
+    sortOrder:   5,
+    isFeatured:  false,
+    status:      'Active',
+  },
+  {
+    name:        'Elder Bags',
+    slug:        'elder-bags',
+    image:       'https://s.alicdn.com/@sc04/kf/Hc944b3a6d9b244ae964e5eb829394b10X.png_300x300.jpg',
+    description: 'Classic, comfortable bags suited for mature users.',
+    sortOrder:   6,
+    isFeatured:  false,
+    status:      'Active',
+  },
 ];
 
+const collectionsData = [
+  {
+    name:        'New Arrivals',
+    slug:        'new-arrivals',
+    banner:      'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=1200&q=80',
+    description: 'Fresh styles added to the store.',
+    status:      'Active',
+  },
+  {
+    name:        'Best Sellers',
+    slug:        'best-sellers',
+    banner:      'https://images.unsplash.com/photo-1598532163257-0bf54057d37a?w=1200&q=80',
+    description: 'Our most-loved bags chosen by customers.',
+    status:      'Active',
+  },
+  {
+    name:        'Sale',
+    slug:        'sale',
+    banner:      'https://images.unsplash.com/photo-1594224457816-29f4c435ef23?w=1200&q=80',
+    description: 'Special discounts — limited time only.',
+    status:      'Active',
+  },
+  {
+    name:        'Limited Edition',
+    slug:        'limited-edition',
+    banner:      'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=1200&q=80',
+    description: 'Exclusive designs available in small quantities.',
+    status:      'Active',
+  },
+  {
+    name:        'Trending Now',
+    slug:        'trending-now',
+    banner:      'https://images.unsplash.com/photo-1598532163257-0bf54057d37a?w=1200&q=80',
+    description: 'What people are buying right now.',
+    status:      'Active',
+  },
+];
 
-mongoose.connect(process.env.MONGODB_URI)
-  .then(async () => {
-    console.log('✅ Connected to MongoDB');
-    await Product.deleteMany(); // optional: clears old products
-    await Product.insertMany(bagsData);
-    console.log('✅ Products inserted successfully!');
-    mongoose.disconnect();
-  })
-  .catch((err) => {
-    console.error('❌ Error inserting products:', err);
-    mongoose.disconnect();
-  });
+// Helper to build a slug
+const makeSlug = (text) => slugify(text, { lower: true, strict: true });
+
+// ─── Main Seeder ─────────────────────────────────────────────────────────────
+
+async function seed() {
+  await mongoose.connect(process.env.MONGODB_URI);
+  console.log('✅ Connected to MongoDB');
+
+  // Clear old data
+  await Product.deleteMany({});
+  await Category.deleteMany({});
+  await Collection.deleteMany({});
+  console.log('🗑️  Cleared old data');
+
+  // Insert categories
+  const categories = await Category.insertMany(categoriesData);
+  const catMap = Object.fromEntries(categories.map((c) => [c.slug, c._id]));
+  console.log('✅ Categories inserted');
+
+  // Insert collections
+  const collections = await Collection.insertMany(collectionsData);
+  const colMap = Object.fromEntries(collections.map((c) => [c.slug, c._id]));
+  console.log('✅ Collections inserted');
+
+  // ── Product Definitions ────────────────────────────────────────────────────
+  // Each product is fully mapped to the Product schema.
+  // category  → one of the slugs defined above
+  // collection→ optional; pick the most relevant one
+
+  const productsData = [
+    // ── KIDS ──────────────────────────────────────────────────────────────────
+    {
+      title:            'Kids Pink Mini Bag',
+      slug:             makeSlug('Kids Pink Mini Bag'),
+      shortDescription: 'Adorable pink mini bag perfect for little girls on the go.',
+      description:      'A lightweight and cute pink mini bag ideal for young girls. Features an adjustable strap, zip closure, and enough space for daily essentials. Made from durable vegan leather.',
+      category:         catMap['kids-bags'],
+      collection:       colMap['sale'],
+      brand:            'Odhira',
+      tags:             ['popular', 'pink', 'mini', 'girls'],
+      images: [
+        { url: 'https://rukminim2.flixcart.com/image/750/900/xif0q/sling-bag/f/n/v/-original-imagz49ehhb5azrp.jpeg?q=20&crop=false', alt: 'Kids Pink Mini Bag', isPrimary: true },
+      ],
+      price:           999,
+      discountedPrice: 849,
+      gst:             12,
+      variants: [
+        { sku: 'KID-PINK-FS', size: 'Free Size', color: 'Pink', colorHex: '#FFB6C1', stock: 50 },
+      ],
+      fabric:           'Vegan Leather',
+      careInstructions: 'Wipe with a damp cloth.',
+      occasion:         ['School', 'Casual', 'Outing'],
+      weight:           300,
+      isFeatured:       true,
+      isBestSeller:     false,
+      isNewArrival:     true,
+      isSale:           true,
+      status:           'Active',
+      metaTitle:        'Kids Pink Mini Bag – Odhira',
+      metaDescription:  'Cute and compact pink mini bag for girls. Shop now at Odhira.',
+      metaKeywords:     ['kids bag', 'pink bag', 'girls mini bag'],
+    },
+    {
+      title:            'Kids Blue Cartoon Bag',
+      slug:             makeSlug('Kids Blue Cartoon Bag'),
+      shortDescription: 'Fun cartoon-themed blue bag for boys.',
+      description:      'Brighten up school days with this vibrant blue cartoon bag. Spacious main compartment, front pocket, and padded back panel for comfort.',
+      category:         catMap['kids-bags'],
+      collection:       colMap['trending-now'],
+      brand:            'Odhira',
+      tags:             ['trending', 'classic', 'boys', 'cartoon'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/71akHUAdSEL._AC_UY1100_.jpg', alt: 'Kids Blue Cartoon Bag', isPrimary: true },
+      ],
+      price:           899,
+      discountedPrice: 809,
+      gst:             12,
+      variants: [
+        { sku: 'KID-BLUE-FS', size: 'Free Size', color: 'Blue', colorHex: '#4169E1', stock: 60 },
+      ],
+      fabric:           'Polyester',
+      careInstructions: 'Hand wash recommended.',
+      occasion:         ['School', 'Casual'],
+      weight:           400,
+      isFeatured:       false,
+      isBestSeller:     true,
+      isNewArrival:     false,
+      isSale:           true,
+      status:           'Active',
+      metaTitle:        'Kids Blue Cartoon Bag – Odhira',
+      metaDescription:  'Trendy blue cartoon backpack for boys. Buy online at Odhira.',
+      metaKeywords:     ['kids blue bag', 'cartoon bag', 'boys school bag'],
+    },
+    {
+      title:            'Kids Unicorn Backpack',
+      slug:             makeSlug('Kids Unicorn Backpack'),
+      shortDescription: 'Magical unicorn-themed backpack for girls.',
+      description:      "Let your child's imagination run wild with this enchanting unicorn backpack. Sparkling print, cushioned shoulder straps, and a roomy interior.",
+      category:         catMap['kids-bags'],
+      collection:       colMap['best-sellers'],
+      brand:            'Odhira',
+      tags:             ['popular', 'unicorn', 'girls', 'backpack'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/61vPyGqS0uL._AC_UY1100_.jpg', alt: 'Kids Unicorn Backpack', isPrimary: true },
+      ],
+      price:           999,
+      discountedPrice: 849,
+      gst:             12,
+      variants: [
+        { sku: 'KID-UNI-FS', size: 'Free Size', color: 'Purple', colorHex: '#9B59B6', stock: 45 },
+      ],
+      fabric:           'Nylon',
+      careInstructions: 'Wipe clean.',
+      occasion:         ['School', 'Birthday Party'],
+      weight:           350,
+      isFeatured:       true,
+      isBestSeller:     true,
+      isNewArrival:     false,
+      isSale:           true,
+      status:           'Active',
+      metaTitle:        'Kids Unicorn Backpack – Odhira',
+      metaDescription:  'Magical unicorn backpack for girls. Shop at Odhira.',
+      metaKeywords:     ['unicorn backpack', 'kids bag', 'girls bag'],
+    },
+    {
+      title:            'Kids Dino Fun Bag',
+      slug:             makeSlug('Kids Dino Fun Bag'),
+      shortDescription: 'Roar into fun with this dinosaur-themed bag.',
+      description:      'A playful dinosaur bag that kids will love. Features a 3D dino head design, zip closure, and padded straps for all-day comfort.',
+      category:         catMap['kids-bags'],
+      collection:       colMap['new-arrivals'],
+      brand:            'Odhira',
+      tags:             ['new', 'dino', 'boys', 'fun'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/718dA6eDoWL._AC_UY1100_.jpg', alt: 'Kids Dino Fun Bag', isPrimary: true },
+      ],
+      price:           849,
+      discountedPrice: 764,
+      gst:             12,
+      variants: [
+        { sku: 'KID-DINO-FS', size: 'Free Size', color: 'Green', colorHex: '#228B22', stock: 40 },
+      ],
+      fabric:           'Polyester',
+      careInstructions: 'Spot clean only.',
+      occasion:         ['School', 'Casual'],
+      weight:           380,
+      isFeatured:       false,
+      isBestSeller:     false,
+      isNewArrival:     true,
+      isSale:           true,
+      status:           'Active',
+      metaTitle:        'Kids Dino Fun Bag – Odhira',
+      metaDescription:  'Dinosaur-themed kids bag. Buy now at Odhira.',
+      metaKeywords:     ['dino bag', 'kids backpack', 'boys bag'],
+    },
+    {
+      title:            'Kids Space Adventure Backpack',
+      slug:             makeSlug('Kids Space Adventure Backpack'),
+      shortDescription: 'Blast off to school with this galaxy-print backpack.',
+      description:      'An out-of-this-world space-themed backpack featuring a galaxy print exterior, multiple compartments, and reflective strips for safety.',
+      category:         catMap['kids-bags'],
+      collection:       colMap['new-arrivals'],
+      brand:            'Odhira',
+      tags:             ['popular', 'new', 'space', 'boys'],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1598532163257-0bf54057d37a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60', alt: 'Kids Space Adventure Backpack', isPrimary: true },
+      ],
+      price:           950,
+      discountedPrice: 808,
+      gst:             12,
+      variants: [
+        { sku: 'KID-SPACE-FS', size: 'Free Size', color: 'Dark Blue', colorHex: '#00008B', stock: 35 },
+      ],
+      fabric:           'Polyester',
+      careInstructions: 'Hand wash, air dry.',
+      occasion:         ['School', 'Travel'],
+      weight:           420,
+      isFeatured:       true,
+      isBestSeller:     false,
+      isNewArrival:     true,
+      isSale:           true,
+      status:           'Active',
+      metaTitle:        'Kids Space Adventure Backpack – Odhira',
+      metaDescription:  'Galaxy-print space backpack for kids. Shop at Odhira.',
+      metaKeywords:     ['space backpack', 'kids bag', 'galaxy bag'],
+    },
+
+    // ── TEEN ──────────────────────────────────────────────────────────────────
+    {
+      title:            'Teen Boy Black Sling',
+      slug:             makeSlug('Teen Boy Black Sling'),
+      shortDescription: 'Sleek black sling bag for the modern teen boy.',
+      description:      'A minimalist black sling bag perfect for teens on the move. Features a USB charging port, anti-scratch exterior, and adjustable crossbody strap.',
+      category:         catMap['teen-bags'],
+      collection:       colMap['trending-now'],
+      brand:            'Odhira',
+      tags:             ['trending', 'popular', 'black', 'sling'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/61UBT3Gn+oL._SX679_.jpg', alt: 'Teen Boy Black Sling', isPrimary: true },
+      ],
+      price:           1299,
+      discountedPrice: 1039,
+      gst:             18,
+      variants: [
+        { sku: 'TEEN-BLK-FS', size: 'Free Size', color: 'Black', colorHex: '#000000', stock: 55 },
+      ],
+      fabric:           'Oxford Cloth',
+      careInstructions: 'Wipe with damp cloth.',
+      occasion:         ['School', 'Casual', 'Travel'],
+      weight:           350,
+      isFeatured:       true,
+      isBestSeller:     true,
+      isNewArrival:     false,
+      isSale:           true,
+      status:           'Active',
+      metaTitle:        'Teen Boy Black Sling Bag – Odhira',
+      metaDescription:  'Stylish black sling bag for teen boys. Buy at Odhira.',
+      metaKeywords:     ['teen sling', 'black sling bag', 'boys sling'],
+    },
+    {
+      title:            'Teen Girl Floral Backpack',
+      slug:             makeSlug('Teen Girl Floral Backpack'),
+      shortDescription: 'Pretty floral backpack every teen girl will adore.',
+      description:      'A feminine floral-print backpack with a padded laptop sleeve, multiple pockets, and soft carry handles. Perfect for school and weekend outings.',
+      category:         catMap['teen-bags'],
+      collection:       colMap['best-sellers'],
+      brand:            'Odhira',
+      tags:             ['popular', 'premium', 'floral', 'girls'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/81z5vl5YrDL._AC_UY1100_.jpg', alt: 'Teen Girl Floral Backpack', isPrimary: true },
+      ],
+      price:           1399,
+      discountedPrice: 1189,
+      gst:             18,
+      variants: [
+        { sku: 'TEEN-FLRL-FS', size: 'Free Size', color: 'Multicolour', colorHex: '#FF69B4', stock: 40 },
+      ],
+      fabric:           'Canvas',
+      careInstructions: 'Spot clean only.',
+      occasion:         ['School', 'Casual', 'Shopping'],
+      weight:           500,
+      isFeatured:       true,
+      isBestSeller:     false,
+      isNewArrival:     false,
+      isSale:           true,
+      status:           'Active',
+      metaTitle:        'Teen Girl Floral Backpack – Odhira',
+      metaDescription:  'Stylish floral backpack for teen girls. Shop at Odhira.',
+      metaKeywords:     ['teen backpack', 'floral bag', 'girls backpack'],
+    },
+    {
+      title:            'Teen Girl Pink Sling Bag',
+      slug:             makeSlug('Teen Girl Pink Sling Bag'),
+      shortDescription: 'Chic pink sling bag for fashion-forward teen girls.',
+      description:      'This trendy pink sling bag features a sleek zip closure, interior organiser pocket, and an adjustable strap. Lightweight and stylish for everyday wear.',
+      category:         catMap['teen-bags'],
+      collection:       colMap['trending-now'],
+      brand:            'Odhira',
+      tags:             ['trending', 'pink', 'girls', 'sling'],
+      images: [
+        { url: 'https://images.pexels.com/photos/934070/pexels-photo-934070.jpeg?auto=compress&cs=tinysrgb&w=800', alt: 'Teen Girl Pink Sling Bag', isPrimary: true },
+      ],
+      price:           1299,
+      discountedPrice: 1039,
+      gst:             18,
+      variants: [
+        { sku: 'TEEN-PNKS-FS', size: 'Free Size', color: 'Pink', colorHex: '#FF69B4', stock: 30 },
+      ],
+      fabric:           'Vegan Leather',
+      careInstructions: 'Wipe with dry cloth.',
+      occasion:         ['School', 'Casual', 'Party'],
+      weight:           300,
+      isFeatured:       false,
+      isBestSeller:     false,
+      isNewArrival:     false,
+      isSale:           true,
+      status:           'Active',
+      metaTitle:        'Teen Girl Pink Sling Bag – Odhira',
+      metaDescription:  'Trendy pink sling bag for teen girls. Buy online at Odhira.',
+      metaKeywords:     ['teen sling bag', 'pink bag', 'girls bag'],
+    },
+    {
+      title:            'College Backpack - Unisex',
+      slug:             makeSlug('College Backpack Unisex'),
+      shortDescription: 'Spacious and sturdy college backpack for students.',
+      description:      'Designed for the campus lifestyle, this unisex college backpack offers a dedicated laptop sleeve (up to 15.6"), side water-bottle pockets, and ergonomic shoulder straps.',
+      category:         catMap['teen-bags'],
+      collection:       colMap['best-sellers'],
+      brand:            'Odhira',
+      tags:             ['popular', 'college', 'unisex', 'laptop'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/71tFOp+E8qL._AC_UY1100_.jpg', alt: 'College Backpack Unisex', isPrimary: true },
+      ],
+      price:           1099,
+      discountedPrice: 824,
+      gst:             18,
+      variants: [
+        { sku: 'COL-UNI-BLK', size: 'Free Size', color: 'Black', colorHex: '#000000', stock: 70 },
+        { sku: 'COL-UNI-GRY', size: 'Free Size', color: 'Grey',  colorHex: '#808080', stock: 50 },
+      ],
+      fabric:           'Polyester',
+      careInstructions: 'Machine wash gentle, air dry.',
+      occasion:         ['College', 'Travel', 'Casual'],
+      weight:           650,
+      customizable:     false,
+      isFeatured:       true,
+      isBestSeller:     true,
+      isNewArrival:     false,
+      isSale:           true,
+      status:           'Active',
+      metaTitle:        'Unisex College Backpack – Odhira',
+      metaDescription:  'Spacious college backpack for boys and girls. Shop at Odhira.',
+      metaKeywords:     ['college bag', 'unisex backpack', 'student bag'],
+    },
+
+    // ── WOMEN ─────────────────────────────────────────────────────────────────
+    {
+      title:            'Adult Woman Tote',
+      slug:             makeSlug('Adult Woman Tote'),
+      shortDescription: 'Versatile everyday tote for the modern woman.',
+      description:      'A spacious tote crafted from premium canvas with a zip top closure, interior card slots, and a detachable wrist strap. Ideal for work, shopping, or a day out.',
+      category:         catMap['women-bags'],
+      collection:       colMap['trending-now'],
+      brand:            'Odhira',
+      tags:             ['trending', 'tote', 'everyday'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/61x5q+zB0qL._AC_UY1100_.jpg', alt: 'Adult Woman Tote', isPrimary: true },
+      ],
+      price:           2499,
+      gst:             18,
+      variants: [
+        { sku: 'WOM-TOTE-BLK', size: 'Free Size', color: 'Black', colorHex: '#000000', stock: 40 },
+        { sku: 'WOM-TOTE-BEG', size: 'Free Size', color: 'Beige', colorHex: '#F5F5DC', stock: 35 },
+      ],
+      fabric:           'Canvas',
+      careInstructions: 'Hand wash cold.',
+      occasion:         ['Work', 'Shopping', 'Casual'],
+      weight:           550,
+      isFeatured:       true,
+      isBestSeller:     false,
+      isNewArrival:     false,
+      isSale:           false,
+      status:           'Active',
+      metaTitle:        'Women\'s Tote Bag – Odhira',
+      metaDescription:  'Versatile canvas tote for women. Buy at Odhira.',
+      metaKeywords:     ['women tote', 'canvas bag', 'everyday tote'],
+    },
+    {
+      title:            'Luxury Leather Tote - Women',
+      slug:             makeSlug('Luxury Leather Tote Women'),
+      shortDescription: 'Premium genuine-leather tote — an everyday luxury.',
+      description:      'Handcrafted from full-grain leather, this luxury tote features gold-toned hardware, suede lining, and two interior slip pockets. A timeless investment piece.',
+      category:         catMap['women-bags'],
+      collection:       colMap['limited-edition'],
+      brand:            'Odhira',
+      tags:             ['limited', 'new', 'luxury', 'leather'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/61JDYw+5P6L._AC_UY1100_.jpg', alt: 'Luxury Leather Tote Women', isPrimary: true },
+      ],
+      price:           4599,
+      discountedPrice: null,
+      gst:             18,
+      variants: [
+        { sku: 'WOM-LUX-TAN', size: 'Free Size', color: 'Tan',   colorHex: '#D2B48C', stock: 20 },
+        { sku: 'WOM-LUX-BLK', size: 'Free Size', color: 'Black', colorHex: '#000000', stock: 15 },
+      ],
+      fabric:           'Full-Grain Leather',
+      careInstructions: 'Use leather conditioner monthly. Avoid water exposure.',
+      occasion:         ['Work', 'Formal', 'Evening'],
+      weight:           800,
+      isFeatured:       true,
+      isBestSeller:     false,
+      isNewArrival:     true,
+      isSale:           false,
+      status:           'Active',
+      metaTitle:        'Luxury Leather Tote for Women – Odhira',
+      metaDescription:  'Premium leather tote bag for women. Shop at Odhira.',
+      metaKeywords:     ['luxury tote', 'leather bag women', 'premium handbag'],
+    },
+    {
+      title:            'Glitter Party Clutch',
+      slug:             makeSlug('Glitter Party Clutch'),
+      shortDescription: 'Dazzle at every event with this glitter clutch.',
+      description:      'A sparkling evening clutch covered in fine glitter, featuring a fold-over magnetic closure, satin lining, and a detachable chain strap for hands-free carry.',
+      category:         catMap['women-bags'],
+      collection:       colMap['trending-now'],
+      brand:            'Odhira',
+      tags:             ['trending', 'popular', 'party', 'clutch'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/71GknhNhgCL._AC_UY1100_.jpg', alt: 'Glitter Party Clutch', isPrimary: true },
+      ],
+      price:           899,
+      discountedPrice: 719,
+      gst:             18,
+      variants: [
+        { sku: 'WOM-GLTR-GLD', size: 'Free Size', color: 'Gold',   colorHex: '#FFD700', stock: 60 },
+        { sku: 'WOM-GLTR-SLV', size: 'Free Size', color: 'Silver', colorHex: '#C0C0C0', stock: 50 },
+        { sku: 'WOM-GLTR-ROS', size: 'Free Size', color: 'Rose',   colorHex: '#FF007F', stock: 40 },
+      ],
+      fabric:           'Glitter Fabric',
+      careInstructions: 'Wipe with soft dry cloth only.',
+      occasion:         ['Party', 'Wedding', 'Evening'],
+      weight:           200,
+      isFeatured:       false,
+      isBestSeller:     true,
+      isNewArrival:     false,
+      isSale:           true,
+      status:           'Active',
+      metaTitle:        'Glitter Party Clutch – Odhira',
+      metaDescription:  'Sparkling glitter clutch for parties. Buy at Odhira.',
+      metaKeywords:     ['glitter clutch', 'party bag', 'evening clutch'],
+    },
+    {
+      title:            'Red Sling Bag for Women',
+      slug:             makeSlug('Red Sling Bag for Women'),
+      shortDescription: 'Bold red sling bag that makes a statement.',
+      description:      'Make a bold impression with this vibrant red sling bag. Crafted from vegan leather with a top zip closure, back safety pocket, and adjustable strap.',
+      category:         catMap['women-bags'],
+      collection:       colMap['best-sellers'],
+      brand:            'Odhira',
+      tags:             ['popular', 'red', 'sling'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/61mPrCYoR7L._AC_UY1100_.jpg', alt: 'Red Sling Bag for Women', isPrimary: true },
+      ],
+      price:           1199,
+      discountedPrice: 1019,
+      gst:             18,
+      variants: [
+        { sku: 'WOM-SLNG-RED', size: 'Free Size', color: 'Red', colorHex: '#DC143C', stock: 45 },
+      ],
+      fabric:           'Vegan Leather',
+      careInstructions: 'Wipe with damp cloth.',
+      occasion:         ['Casual', 'Shopping', 'Date Night'],
+      weight:           320,
+      isFeatured:       false,
+      isBestSeller:     true,
+      isNewArrival:     false,
+      isSale:           true,
+      status:           'Active',
+      metaTitle:        'Red Sling Bag Women – Odhira',
+      metaDescription:  'Bold red sling bag for women. Shop now at Odhira.',
+      metaKeywords:     ['red sling bag', 'women sling', 'vegan leather bag'],
+    },
+    {
+      title:            'Adult Woman Evening Clutch',
+      slug:             makeSlug('Adult Woman Evening Clutch'),
+      shortDescription: 'Elegant clutch for formal evenings and celebrations.',
+      description:      'A sophisticated evening clutch featuring a satin exterior, crystal clasp closure, and a slim interior with card slots and a phone pocket.',
+      category:         catMap['women-bags'],
+      collection:       colMap['trending-now'],
+      brand:            'Odhira',
+      tags:             ['trending', 'clutch', 'evening'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/61vRt6qY8xL._AC_UY1100_.jpg', alt: 'Adult Woman Evening Clutch', isPrimary: true },
+      ],
+      price:           999,
+      discountedPrice: 749,
+      gst:             18,
+      variants: [
+        { sku: 'WOM-EVN-BLK', size: 'Free Size', color: 'Black',  colorHex: '#000000', stock: 35 },
+        { sku: 'WOM-EVN-GLD', size: 'Free Size', color: 'Gold',   colorHex: '#FFD700', stock: 30 },
+        { sku: 'WOM-EVN-NVY', size: 'Free Size', color: 'Navy',   colorHex: '#001F5B', stock: 25 },
+      ],
+      fabric:           'Satin',
+      careInstructions: 'Dry clean only.',
+      occasion:         ['Wedding', 'Party', 'Formal'],
+      weight:           180,
+      isFeatured:       true,
+      isBestSeller:     false,
+      isNewArrival:     false,
+      isSale:           true,
+      status:           'Active',
+      metaTitle:        'Evening Clutch for Women – Odhira',
+      metaDescription:  'Elegant evening clutch for special occasions. Buy at Odhira.',
+      metaKeywords:     ['evening clutch', 'women clutch', 'party bag'],
+    },
+
+    // ── MEN ───────────────────────────────────────────────────────────────────
+    {
+      title:            'Adult Man Laptop Bag',
+      slug:             makeSlug('Adult Man Laptop Bag'),
+      shortDescription: 'Professional laptop bag for the modern working man.',
+      description:      'A sleek laptop bag with a padded 15.6" sleeve, multiple organiser pockets, waterproof exterior, and a trolley strap for easy travel.',
+      category:         catMap['men-bags'],
+      collection:       colMap['new-arrivals'],
+      brand:            'Odhira',
+      tags:             ['new', 'laptop', 'office', 'men'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/91ogt8ED2EL._AC_UY1100_.jpg', alt: 'Adult Man Laptop Bag', isPrimary: true },
+      ],
+      price:           2799,
+      gst:             18,
+      variants: [
+        { sku: 'MEN-LAP-BLK', size: 'Free Size', color: 'Black', colorHex: '#000000', stock: 50 },
+        { sku: 'MEN-LAP-GRY', size: 'Free Size', color: 'Grey',  colorHex: '#808080', stock: 30 },
+      ],
+      fabric:           'Nylon + Vegan Leather Trim',
+      careInstructions: 'Wipe clean with dry cloth.',
+      occasion:         ['Work', 'Travel', 'Business'],
+      weight:           700,
+      customizable:     false,
+      isFeatured:       true,
+      isBestSeller:     false,
+      isNewArrival:     true,
+      isSale:           false,
+      status:           'Active',
+      metaTitle:        'Men\'s Laptop Bag – Odhira',
+      metaDescription:  'Professional laptop bag for men. Shop now at Odhira.',
+      metaKeywords:     ['laptop bag', 'men office bag', 'work bag'],
+    },
+    {
+      title:            'Men\'s Travel Backpack',
+      slug:             makeSlug('Mens Travel Backpack'),
+      shortDescription: 'Roomy travel backpack built for weekend adventures.',
+      description:      'Built for the explorer, this 40L travel backpack features an expandable main compartment, side compression straps, a rain cover, and an ergonomic back system.',
+      category:         catMap['men-bags'],
+      collection:       colMap['trending-now'],
+      brand:            'Odhira',
+      tags:             ['trending', 'travel', 'men', 'backpack'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/81l3rZK4lnL._AC_UY1100_.jpg', alt: 'Mens Travel Backpack', isPrimary: true },
+      ],
+      price:           2199,
+      discountedPrice: 1979,
+      gst:             18,
+      variants: [
+        { sku: 'MEN-TRV-BLK', size: 'Free Size', color: 'Black',   colorHex: '#000000', stock: 35 },
+        { sku: 'MEN-TRV-KHK', size: 'Free Size', color: 'Khaki',   colorHex: '#C3B091', stock: 25 },
+        { sku: 'MEN-TRV-NVY', size: 'Free Size', color: 'Navy',    colorHex: '#001F5B', stock: 20 },
+      ],
+      fabric:           'Cordura Nylon',
+      careInstructions: 'Wipe with damp cloth.',
+      occasion:         ['Travel', 'Trekking', 'Weekend Trip'],
+      weight:           900,
+      isFeatured:       true,
+      isBestSeller:     false,
+      isNewArrival:     false,
+      isSale:           true,
+      status:           'Active',
+      metaTitle:        'Men\'s Travel Backpack – Odhira',
+      metaDescription:  'Spacious travel backpack for men. Buy at Odhira.',
+      metaKeywords:     ['travel backpack', 'men backpack', 'weekend bag'],
+    },
+    {
+      title:            'Mens Brown Messenger Bag',
+      slug:             makeSlug('Mens Brown Messenger Bag'),
+      shortDescription: 'Classic brown messenger bag for everyday carry.',
+      description:      'A timeless messenger bag in rich brown leather with a magnetic flap closure, adjustable crossbody strap, and multiple interior pockets for organisation.',
+      category:         catMap['men-bags'],
+      collection:       colMap['trending-now'],
+      brand:            'Odhira',
+      tags:             ['trending', 'messenger', 'brown', 'leather'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/61+Z5b8kYrL._AC_UY1100_.jpg', alt: 'Mens Brown Messenger Bag', isPrimary: true },
+      ],
+      price:           1899,
+      gst:             18,
+      variants: [
+        { sku: 'MEN-MSG-BRN', size: 'Free Size', color: 'Brown', colorHex: '#8B4513', stock: 30 },
+      ],
+      fabric:           'Genuine Leather',
+      careInstructions: 'Condition monthly with leather cream.',
+      occasion:         ['Work', 'Casual', 'College'],
+      weight:           600,
+      isFeatured:       false,
+      isBestSeller:     false,
+      isNewArrival:     false,
+      isSale:           false,
+      status:           'Active',
+      metaTitle:        'Men\'s Brown Messenger Bag – Odhira',
+      metaDescription:  'Classic leather messenger bag for men. Shop at Odhira.',
+      metaKeywords:     ['messenger bag', 'men leather bag', 'brown bag'],
+    },
+
+    // ── UNISEX ────────────────────────────────────────────────────────────────
+    {
+      title:            'Unisex Duffel Gym Bag',
+      slug:             makeSlug('Unisex Duffel Gym Bag'),
+      shortDescription: 'High-capacity gym duffel for your workout essentials.',
+      description:      'A durable gym duffel with a wet-dry compartment, shoe pocket, ventilated mesh side pockets, and a detachable shoulder strap. Perfect for gym, swimming, or sports.',
+      category:         catMap['unisex-bags'],
+      collection:       colMap['trending-now'],
+      brand:            'Odhira',
+      tags:             ['trending', 'popular', 'gym', 'duffel'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/71LGukjcZeL._AC_UY1100_.jpg', alt: 'Unisex Duffel Gym Bag', isPrimary: true },
+      ],
+      price:           1599,
+      discountedPrice: 1279,
+      gst:             18,
+      variants: [
+        { sku: 'UNI-DFL-BLK', size: 'Free Size', color: 'Black', colorHex: '#000000', stock: 60 },
+        { sku: 'UNI-DFL-RED', size: 'Free Size', color: 'Red',   colorHex: '#DC143C', stock: 40 },
+        { sku: 'UNI-DFL-NVY', size: 'Free Size', color: 'Navy',  colorHex: '#001F5B', stock: 35 },
+      ],
+      fabric:           'Polyester',
+      careInstructions: 'Machine wash cold, tumble dry low.',
+      occasion:         ['Gym', 'Sports', 'Travel'],
+      weight:           650,
+      isFeatured:       true,
+      isBestSeller:     true,
+      isNewArrival:     false,
+      isSale:           true,
+      status:           'Active',
+      metaTitle:        'Unisex Gym Duffel Bag – Odhira',
+      metaDescription:  'High-capacity gym bag for men and women. Buy at Odhira.',
+      metaKeywords:     ['gym bag', 'duffel bag', 'sports bag'],
+    },
+    {
+      title:            'Formal Laptop Office Bag',
+      slug:             makeSlug('Formal Laptop Office Bag'),
+      shortDescription: 'Smart and sleek office bag for professionals.',
+      description:      'A polished office bag featuring a 15.6" laptop compartment, document section, pen holders, and a trolley-sleeve for pairing with luggage during business travel.',
+      category:         catMap['unisex-bags'],
+      collection:       colMap['new-arrivals'],
+      brand:            'Odhira',
+      tags:             ['new', 'office', 'laptop', 'formal'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/71yE+nDnUnL._AC_UY1100_.jpg', alt: 'Formal Laptop Office Bag', isPrimary: true },
+      ],
+      price:           1999,
+      gst:             18,
+      variants: [
+        { sku: 'UNI-OFC-BLK', size: 'Free Size', color: 'Black', colorHex: '#000000', stock: 50 },
+        { sku: 'UNI-OFC-NVY', size: 'Free Size', color: 'Navy',  colorHex: '#001F5B', stock: 30 },
+      ],
+      fabric:           'Nylon',
+      careInstructions: 'Wipe with dry cloth.',
+      occasion:         ['Work', 'Business Travel'],
+      weight:           750,
+      isFeatured:       false,
+      isBestSeller:     false,
+      isNewArrival:     true,
+      isSale:           false,
+      status:           'Active',
+      metaTitle:        'Formal Laptop Office Bag – Odhira',
+      metaDescription:  'Professional laptop office bag for men and women. Shop at Odhira.',
+      metaKeywords:     ['office bag', 'laptop bag', 'formal bag'],
+    },
+    {
+      title:            'Unisex Travel Duffel Bag',
+      slug:             makeSlug('Unisex Travel Duffel Bag'),
+      shortDescription: 'Compact travel duffel for weekend getaways.',
+      description:      'A lightweight 30L travel duffel with a waterproof coating, exterior zip pocket, carry handles, and a detachable shoulder strap. Folds flat for easy storage.',
+      category:         catMap['unisex-bags'],
+      collection:       colMap['best-sellers'],
+      brand:            'Odhira',
+      tags:             ['popular', 'travel', 'duffel'],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60', alt: 'Unisex Travel Duffel Bag', isPrimary: true },
+      ],
+      price:           1999,
+      discountedPrice: 1599,
+      gst:             18,
+      variants: [
+        { sku: 'UNI-TRV-BLK', size: 'Free Size', color: 'Black',  colorHex: '#000000', stock: 45 },
+        { sku: 'UNI-TRV-OLV', size: 'Free Size', color: 'Olive',  colorHex: '#808000', stock: 30 },
+      ],
+      fabric:           'Polyester with PU coating',
+      careInstructions: 'Wipe with damp cloth.',
+      occasion:         ['Travel', 'Weekend Trip', 'Gym'],
+      weight:           600,
+      isFeatured:       false,
+      isBestSeller:     true,
+      isNewArrival:     false,
+      isSale:           true,
+      status:           'Active',
+      metaTitle:        'Unisex Travel Duffel Bag – Odhira',
+      metaDescription:  'Compact travel duffel for all. Buy at Odhira.',
+      metaKeywords:     ['travel duffel', 'unisex bag', 'weekend bag'],
+    },
+
+    // ── ELDER ─────────────────────────────────────────────────────────────────
+    {
+      title:            'Elder Man Leather Bag',
+      slug:             makeSlug('Elder Man Leather Bag'),
+      shortDescription: 'Distinguished leather carry bag for the mature gentleman.',
+      description:      'A refined full-grain leather bag with a spacious main compartment, internal dividers, and a top-zip closure. Ideal for everyday essentials or light travel.',
+      category:         catMap['elder-bags'],
+      collection:       null,
+      brand:            'Odhira',
+      tags:             ['leather', 'classic', 'men'],
+      images: [
+        { url: 'https://s.alicdn.com/@sc04/kf/Hc944b3a6d9b244ae964e5eb829394b10X.png_300x300.jpg', alt: 'Elder Man Leather Bag', isPrimary: true },
+      ],
+      price:           3499,
+      gst:             18,
+      variants: [
+        { sku: 'ELD-MEN-TAN', size: 'Free Size', color: 'Tan',   colorHex: '#D2B48C', stock: 20 },
+        { sku: 'ELD-MEN-BRN', size: 'Free Size', color: 'Brown', colorHex: '#8B4513', stock: 15 },
+      ],
+      fabric:           'Full-Grain Leather',
+      careInstructions: 'Polish monthly. Store in dust bag.',
+      occasion:         ['Casual', 'Travel', 'Formal'],
+      weight:           900,
+      isFeatured:       false,
+      isBestSeller:     false,
+      isNewArrival:     false,
+      isSale:           false,
+      status:           'Active',
+      metaTitle:        'Elder Man Leather Bag – Odhira',
+      metaDescription:  'Classic leather bag for men. Shop at Odhira.',
+      metaKeywords:     ['elder men bag', 'leather bag', 'classic bag'],
+    },
+    {
+      title:            'Elder Woman Classic Handbag',
+      slug:             makeSlug('Elder Woman Classic Handbag'),
+      shortDescription: 'Timeless handbag crafted for style and comfort.',
+      description:      'An elegant classic handbag with structured shape, top handles, a zip closure, suede lining, and interior slip pockets. Built to last a lifetime.',
+      category:         catMap['elder-bags'],
+      collection:       colMap['limited-edition'],
+      brand:            'Odhira',
+      tags:             ['limited', 'classic', 'women', 'handbag'],
+      images: [
+        { url: 'https://m.media-amazon.com/images/I/71jQgFDHfdL._AC_UY1100_.jpg', alt: 'Elder Woman Classic Handbag', isPrimary: true },
+      ],
+      price:           1999,
+      gst:             18,
+      variants: [
+        { sku: 'ELD-WOM-BLK', size: 'Free Size', color: 'Black',  colorHex: '#000000', stock: 20 },
+        { sku: 'ELD-WOM-BRN', size: 'Free Size', color: 'Brown',  colorHex: '#8B4513', stock: 15 },
+        { sku: 'ELD-WOM-BEG', size: 'Free Size', color: 'Beige',  colorHex: '#F5F5DC', stock: 10 },
+      ],
+      fabric:           'Structured PU Leather',
+      careInstructions: 'Wipe with dry cloth. Store with stuffing.',
+      occasion:         ['Casual', 'Shopping', 'Religious Visit'],
+      weight:           550,
+      isFeatured:       true,
+      isBestSeller:     false,
+      isNewArrival:     false,
+      isSale:           false,
+      status:           'Active',
+      metaTitle:        'Elder Woman Classic Handbag – Odhira',
+      metaDescription:  'Timeless classic handbag for women. Buy at Odhira.',
+      metaKeywords:     ['elder women bag', 'classic handbag', 'structured bag'],
+    },
+  ];
+
+  // Insert products one-by-one using save() so pre-save middleware runs
+  let count = 0;
+  for (const data of productsData) {
+    const p = new Product(data);
+    await p.save();
+    count++;
+  }
+
+  console.log(`✅ ${count} products inserted successfully!`);
+  await mongoose.disconnect();
+  console.log('🔌 Disconnected from MongoDB');
+}
+
+seed().catch((err) => {
+  console.error('❌ Seed error:', err);
+  mongoose.disconnect();
+});
