@@ -8,7 +8,7 @@ const router = express.Router();
 const {
 
   getMenPage,
-  getWomenPage,
+  getWomenProducts,
   getKidsPage,
   getTeenPage,
   getElderPage,
@@ -30,8 +30,10 @@ const {
 } = require("../controllers/collectionController");
 const { protect, adminOnly } = require("../middleware/authMiddleware");
 
+
+router.get(":slug", getCollectionBySlug);
 router.get("/men",          getMenPage);
-router.get("/women",        getWomenPage);
+router.get("/women",        getWomenProducts);
 router.get("/kids",         getKidsPage);
 router.get("/teen",         getTeenPage);
 router.get("/elder",        getElderPage);

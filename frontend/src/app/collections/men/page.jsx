@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { SlidersHorizontal, X, ChevronDown } from "lucide-react";
 import ProductCard from "../../components/ProductCard";
 import FilterSidebar from "../../components/FilterSidebar";
@@ -211,6 +211,22 @@ export default function MenPage() {
   const [sort, setSort] = useState("featured");
   const [sortOpen, setSortOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/collections/men");
+      console.log("Response:", response);
+      if (!response.ok) {
+        throw new Error("Failed to fetch data");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   function handleFilterChange(key, value) {
     setFilters((prev) => {

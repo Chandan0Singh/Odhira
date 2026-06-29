@@ -2,6 +2,9 @@
 // controllers/collectionController.js
 // ============================================================
 
+
+
+
 const Product    = require("../models/Product");
 const Category   = require("../models/Category");
 const Collection = require("../models/Collection");
@@ -154,17 +157,72 @@ async function getFlagPage(flagKey, meta, req, res) {
 // ─── EXPORTED HANDLERS ───────────────────────────────────────────────────────
  
 // Category pages
-const getMenPage = (req, res) =>
-  getCategoryPage("men-bags", {
-    title:       "Men's Bags",
-    description: "Laptop bags, messenger bags, backpacks and duffels for men.",
-  }, req, res);
+const getMenPage = (req, res) =>{
+  try{
+    const data = Category.findOne({
+      slug: "men",
+      status: "Active",
+    });
+
+    if (!data) {
+      return res.status(404).json({
+        success: false,
+        message: "no data found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data,
+    })
+
+
+
+  } catch(err){
+    res.status(500).json({ message: "Server Error", error: err.message });
+  }
+}
  
-const getWomenPage = (req, res) =>
-  getCategoryPage("women-bags", {
-    title:       "Women's Bags",
-    description: "Stylish totes, clutches, satchels and handbags for women.",
-  }, req, res);
+
+const getWomenProducts = async (req, res) => {
+  try {
+    // Find Women's category
+    const womenCategory = await Category.findOne({
+      slug: "women", // Change this if your slug is different
+      status: "Active",
+    });
+
+    if (!womenCategory) {
+      return res.status(404).json({
+        success: false,
+        message: "Women category not found",
+      });
+    }
+
+    // Fetch all active products in Women's category
+    const products = await Product.find({
+      category: womenCategory._id,
+      status: "Active",
+    })
+      .populate("category", "name slug")
+      .populate("collection", "name slug")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: products.length,
+      products,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
  
 const getKidsPage = (req, res) =>
   getCategoryPage("kids-bags", {
@@ -256,6 +314,8 @@ const getCollectionById = async (req, res) => {
   }
 };
 
+
+
 // GET /api/collections/slug/:slug  — single collection by slug
 const getCollectionBySlug = async (req, res) => {
   try {
@@ -307,7 +367,7 @@ const deleteCollection = async (req, res) => {
 module.exports = {
 
   getMenPage,
-  getWomenPage,
+  getWomenProducts,
   getKidsPage,
   getTeenPage,
   getElderPage,
@@ -319,7 +379,7 @@ module.exports = {
   getLimitedEditionPage,
   getTrendingPage,
   getFeaturedPage,
-
+  
   getAllCollections,
   getCollectionById,
   getCollectionBySlug,
