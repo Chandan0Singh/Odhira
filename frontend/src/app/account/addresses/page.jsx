@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { MapPin, Plus, Pencil, Trash2, X, Loader2, Star } from "lucide-react";
 import { useAuth } from "@/context/AuthContext"; // adjust path if your context lives elsewhere
 
-constAPI_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 const EMPTY_FORM = {
   type: "Home",
