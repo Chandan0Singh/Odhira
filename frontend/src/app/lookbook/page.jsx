@@ -1,42 +1,40 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 export default function LookbookPage() {
-  const looks = [
-    {
-      id: 1,
-      title: "Summer Elegance",
-      image:
-        "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=1200&q=80",
-    },
-    {
-      id: 2,
-      title: "Modern Ethnic",
-      image:
-        "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=1200&q=80",
-    },
-    {
-      id: 3,
-      title: "Luxury Evening",
-      image:
-        "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200&q=80",
-    },
-    {
-      id: 4,
-      title: "Timeless Style",
-      image:
-        "https://images.unsplash.com/photo-1515886657613-9f3515b0c78e?w=1200&q=80",
-    },
-    {
-      id: 5,
-      title: "Festive Collection",
-      image:
-        "https://images.unsplash.com/photo-1614252369475-531eba835eb1?w=1200&q=80",
-    },
-    {
-      id: 6,
-      title: "Contemporary Fashion",
-      image:
-        "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=1200&q=80",
-    },
-  ];
+  const [looks, setLooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchLookbook = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/lookbook");
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch lookbook");
+      }
+
+      const result = await response.json();
+
+      setLooks(result.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLookbook();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#F8F5EE] min-h-screen">
@@ -91,17 +89,17 @@ export default function LookbookPage() {
         </p>
       </section>
 
-      {/* Masonry Style Grid */}
+      {/* Masonry Grid */}
       <section className="max-w-7xl mx-auto px-6 pb-24">
         <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
           {looks.map((look) => (
             <div
-              key={look.id}
+              key={look._id}
               className="break-inside-avoid bg-white overflow-hidden border border-[#E4E0D8] group"
             >
               <div className="overflow-hidden">
                 <img
-                  src={look.image}
+                  src={look.coverImage}
                   alt={look.title}
                   className="w-full object-cover group-hover:scale-105 transition duration-700"
                 />
@@ -117,7 +115,11 @@ export default function LookbookPage() {
                   {look.title}
                 </h3>
 
-                <button className="mt-4 text-[#5E6B58] uppercase tracking-[3px] text-xs font-semibold">
+                <p className="mt-3 text-gray-600 text-sm">
+                  {look.description}
+                </p>
+
+                <button className="mt-5 text-[#5E6B58] uppercase tracking-[3px] text-xs font-semibold">
                   View Look
                 </button>
               </div>
