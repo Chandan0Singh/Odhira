@@ -2,7 +2,15 @@ const express = require("express");
 
 const router = express.Router();
 
-const { createBlog, getAllBlogs, deleteBlog, filterBlogs, getSingleBlog, updateBlog, getPublishedBlogs, } = require("../controllers/blogController");
+const {
+  createBlog,
+  getAllBlogs,
+  deleteBlog,
+  filterBlogs,
+  getSingleBlog,
+  updateBlog,
+  getPublishedBlogs,
+} = require("../controllers/blogController");
 
 const upload = require("../middleware/upload");
 
@@ -16,9 +24,9 @@ router.get("/", getAllBlogs);
 
 router.get("/published", getPublishedBlogs);
 
-router.get("/:id", getSingleBlog);
-
 router.get("/search", filterBlogs);
+
+router.get("/:id", getSingleBlog);
 
 router.delete("/delete", deleteBlog);
 
