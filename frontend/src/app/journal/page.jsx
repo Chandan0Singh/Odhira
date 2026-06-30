@@ -186,7 +186,7 @@ export default function JournalPage() {
                     </div>
 
                     <Link
-                      href={`/blog/${blog._id}`}
+                      href={`/journal/${blog._id}`}
                       className="flex items-center gap-2 text-[#5E6B58]"
                     >
                       Read
