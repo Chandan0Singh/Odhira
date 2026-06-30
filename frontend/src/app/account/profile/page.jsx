@@ -1,23 +1,124 @@
 "use client";
 
-import { useState } from "react";
-import { User, Mail, Phone, Calendar } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Mail, Phone, Calendar, Loader2, Check } from "lucide-react";
+import { useAuth } from "@/context/AuthContext"; // adjust path if your context lives elsewhere
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function ProfilePage() {
+  const { user, token, login } = useAuth();
+
   const [formData, setFormData] = useState({
-    firstName: "Chandan",
-    lastName: "Singh",
-    email: "chandan@example.com",
-    phone: "+91 9876543210",
-    dob: "2003-09-13",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    dob: "",
   });
+
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  // Populate the form once the logged-in user is available
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        dob: user.dob || "",
+      });
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+    setSuccess("");
   };
+
+  const handleCancel = () => {
+    if (!user) return;
+    setFormData({
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      email: user.email || "",
+      phone: user.phone || "",
+      dob: user.dob || "",
+    });
+    setError("");
+    setSuccess("");
+  };
+
+  const handleSave = async () => {
+    setError("");
+    setSuccess("");
+
+    if (!formData.firstName || formData.firstName.trim().length < 2) {
+      setError("First name must be at least 2 characters long");
+      return;
+    }
+    if (!formData.lastName || formData.lastName.trim().length < 2) {
+      setError("Last name must be at least 2 characters long");
+      return;
+    }
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      setError("Enter a valid email address");
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/user/update`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          userId: user.id || user._id,
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          // dob isn't part of the User schema yet — see note below
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setError(data.message || "Could not update profile");
+        setSaving(false);
+        return;
+      }
+
+      login({
+        user: { ...user, ...data.user },
+        token,
+      });
+
+      setSuccess("Profile updated successfully");
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="bg-[#F8F5EE] min-h-screen flex items-center justify-center">
+        <p className="text-[#777]">Loading profile…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#F8F5EE] min-h-screen">
@@ -59,8 +160,8 @@ export default function ProfilePage() {
                   {formData.firstName} {formData.lastName}
                 </h2>
 
-                <p className="text-[#777] mt-2">
-                  Premium Member
+                <p className="text-[#777] mt-2 capitalize">
+                  {user.role || "Member"}
                 </p>
               </div>
             </div>
@@ -68,6 +169,19 @@ export default function ProfilePage() {
 
           {/* Form */}
           <div className="p-8">
+            {error && (
+              <div className="mb-6 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3">
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="mb-6 flex items-center gap-2 bg-[#EEF3EC] border border-[#5E6B58]/30 text-[#3F4A3A] text-sm px-4 py-3">
+                <Check size={16} />
+                {success}
+              </div>
+            )}
+
             <div className="grid md:grid-cols-2 gap-6">
               {/* First Name */}
               <div>
@@ -168,11 +282,26 @@ export default function ProfilePage() {
 
             {/* Buttons */}
             <div className="flex gap-4 mt-8">
-              <button className="px-8 py-3 bg-[#5E6B58] text-white uppercase tracking-[2px] text-xs font-semibold hover:bg-[#4c5848] transition">
-                Save Changes
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-2 px-8 py-3 bg-[#5E6B58] text-white uppercase tracking-[2px] text-xs font-semibold hover:bg-[#4c5848] transition disabled:opacity-60"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    Saving…
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
               </button>
 
-              <button className="px-8 py-3 border border-[#5E6B58] text-[#5E6B58] uppercase tracking-[2px] text-xs font-semibold hover:bg-[#5E6B58] hover:text-white transition">
+              <button
+                onClick={handleCancel}
+                disabled={saving}
+                className="px-8 py-3 border border-[#5E6B58] text-[#5E6B58] uppercase tracking-[2px] text-xs font-semibold hover:bg-[#5E6B58] hover:text-white transition"
+              >
                 Cancel
               </button>
             </div>

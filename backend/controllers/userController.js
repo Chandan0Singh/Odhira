@@ -36,10 +36,7 @@ const loginUser = async (req, res) => {
     }
 
     // Compare Password
-    const isMatch = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(401).json({
@@ -57,7 +54,7 @@ const loginUser = async (req, res) => {
       process.env.JWT_SECRET,
       {
         expiresIn: "7d",
-      }
+      },
     );
 
     return res.status(200).json({
@@ -176,7 +173,7 @@ const signupUser = async (req, res) => {
       process.env.JWT_SECRET,
       {
         expiresIn: "7d",
-      }
+      },
     );
 
     return res.status(201).json({
@@ -340,7 +337,8 @@ const deleteAccount = async (req, res) => {
 /* ---------------- UPDATE USER ---------------- */
 const updateUser = async (req, res) => {
   try {
-    const { userId, name, email, role, phone, address } = req.body;
+    const { userId, firstName, lastName, email, phone, address, role } =
+      req.body;
 
     if (!userId) {
       return res.status(400).json({
@@ -349,31 +347,39 @@ const updateUser = async (req, res) => {
       });
     }
 
-    const updateData = {};
+    const user = await User.findById(userId);
 
-    if (name?.trim()) updateData.name = name;
-    if (email?.trim()) updateData.email = email;
-    if (role?.trim()) updateData.role = role;
-    if (phone?.trim()) updateData.phone = phone;
-    if (address?.trim()) updateData.address = address;
-
-    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
-      new: true,
-    });
-
-    if (!updatedUser) {
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
 
+    // Update fields
+    if (firstName !== undefined) user.firstName = firstName.trim();
+    if (lastName !== undefined) user.lastName = lastName.trim();
+
+    // Automatically update full name
+    user.name = `${user.firstName} ${user.lastName}`.trim();
+
+    if (email !== undefined) user.email = email.trim();
+    if (phone !== undefined) user.phone = phone.trim();
+    if (address !== undefined) user.address = address.trim();
+
+    // Optional (mainly for admin panel)
+    if (role !== undefined) user.role = role;
+
+    await user.save();
+
     return res.status(200).json({
       success: true,
       message: "User updated successfully",
-      user: updatedUser,
+      user,
     });
   } catch (error) {
+    console.error("UPDATE USER ERROR:", error);
+
     return res.status(500).json({
       success: false,
       message: error.message,
