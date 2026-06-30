@@ -1,92 +1,14 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { SlidersHorizontal, X, ChevronDown } from "lucide-react";
 import ProductCard from "../../components/ProductCard";
 import FilterSidebar from "../../components/FilterSidebar";
 
-/* ── Mock Products ──────────────────────────────────────────── */
-const PRODUCTS = [
-  {
-    id: 1, name: "Zari Potli Bag", category: "Bags", price: 2800, originalPrice: 3500, badge: "New",
-    colors: [{ name: "Gold", hex: "#C8A96B" }, { name: "Ivory", hex: "#F5F0E8" }],
-    images: [
-      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&q=80",
-      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=600&q=80",
-    ],
-  },
-  {
-    id: 2, name: "Hand-Embroidered Clutch", category: "Bags", price: 1900,
-    colors: [{ name: "Sage", hex: "#A8B2A1" }, { name: "Blush", hex: "#E8C5B0" }],
-    images: [
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80",
-      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&q=80",
-    ],
-  },
-  {
-    id: 3, name: "Ajrakh Block Print Stole", category: "Stoles & Dupattas", price: 1200, originalPrice: 1600,
-    colors: [{ name: "Rust", hex: "#9E4A2F" }, { name: "Charcoal", hex: "#3D3D3D" }],
-    images: [
-      "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=600&q=80",
-      "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&q=80",
-    ],
-  },
-  {
-    id: 4, name: "Silk Chanderi Dupatta", category: "Stoles & Dupattas", price: 2200, badge: "Best Seller",
-    colors: [{ name: "Ivory", hex: "#F5F0E8" }, { name: "Sage", hex: "#A8B2A1" }, { name: "Gold", hex: "#C8A96B" }],
-    images: [
-      "https://images.unsplash.com/photo-1609709295948-17d77cb2a69b?w=600&q=80",
-      "https://images.unsplash.com/photo-1617022678019-8d0dc0700f6d?w=600&q=80",
-    ],
-  },
-  {
-    id: 5, name: "Kundan Drop Earrings", category: "Jewellery", price: 950,
-    colors: [{ name: "Gold", hex: "#C8A96B" }],
-    images: [
-      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&q=80",
-      "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&q=80",
-    ],
-  },
-  {
-    id: 6, name: "Oxidised Silver Bangles (Set of 6)", category: "Jewellery", price: 1400, originalPrice: 1800,
-    colors: [{ name: "Charcoal", hex: "#3D3D3D" }],
-    images: [
-      "https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=600&q=80",
-      "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?w=600&q=80",
-    ],
-  },
-  {
-    id: 7, name: "Hand-Painted Potli — Florals", category: "Bags", price: 3200, badge: "New",
-    colors: [{ name: "Blush", hex: "#E8C5B0" }, { name: "Ivory", hex: "#F5F0E8" }],
-    images: [
-      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&q=80",
-      "https://images.unsplash.com/photo-1575032617751-6ddec2089882?w=600&q=80",
-    ],
-  },
-  {
-    id: 8, name: "Ikat Woven Belt", category: "Belts", price: 850,
-    colors: [{ name: "Taupe", hex: "#B7A99A" }, { name: "Rust", hex: "#9E4A2F" }],
-    images: [
-      "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=600&q=80",
-      "https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=600&q=80",
-    ],
-  },
-  {
-    id: 9, name: "Kantha Stitch Hair Scarf", category: "Stoles & Dupattas", price: 680,
-    colors: [{ name: "Sage", hex: "#A8B2A1" }, { name: "Gold", hex: "#C8A96B" }],
-    images: [
-      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&q=80",
-      "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=600&q=80",
-    ],
-  },
-];
-
-const CATEGORIES = ["Bags", "Stoles & Dupattas", "Jewellery", "Belts"];
-
 const SORT_OPTIONS = [
-  { label: "Featured",       value: "featured" },
+  { label: "Featured", value: "featured" },
   { label: "Price: Low–High", value: "price-asc" },
   { label: "Price: High–Low", value: "price-desc" },
-  { label: "Newest First",   value: "newest" },
+  { label: "Newest First", value: "newest" },
 ];
 
 const EMPTY_FILTERS = { colors: [], sizes: [], price: null, collections: [] };
@@ -97,12 +19,75 @@ function priceInRange(price, range) {
   return price >= min && price <= max;
 }
 
-/* ── Page ───────────────────────────────────────────────────── */
+// Map a backend Product doc -> the shape ProductCard/FilterSidebar expect
+function normalizeProduct(p) {
+  const colorMap = new Map();
+  (p.variants || []).forEach((v) => {
+    if (v.color && !colorMap.has(v.color)) {
+      colorMap.set(v.color, { name: v.color, hex: v.colorCode || v.hex || "#C8A96B" });
+    }
+  });
+
+  return {
+    id: p._id,
+    name: p.title,
+    // Tags double as sub-category facets (Bags, Stoles & Dupattas, Jewellery, Belts)
+    category: (p.tags && p.tags[0]) || p.category?.name || "Accessories",
+    price: p.discountedPrice ?? p.price,
+    originalPrice: p.discountedPrice ? p.price : undefined,
+    badge: p.isNewArrival ? "New" : p.isBestSeller ? "Best Seller" : undefined,
+    colors: Array.from(colorMap.values()),
+    images: (p.images || []).map((img) => (typeof img === "string" ? img : img.url)),
+    createdAt: p.createdAt,
+  };
+}
+
 export default function AccessoriesPage() {
-  const [filters, setFilters]       = useState(EMPTY_FILTERS);
-  const [sort, setSort]             = useState("featured");
-  const [sortOpen, setSortOpen]     = useState(false);
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [sort, setSort] = useState("featured");
+  const [sortOpen, setSortOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchData() {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/collections/accessories"
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        if (!cancelled) {
+          const normalized = (data.products || []).map(normalizeProduct);
+          setProducts(normalized);
+        }
+      } catch (err) {
+        console.error("Error fetching accessories:", err);
+        if (!cancelled) setError("Couldn't load products. Please try again.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchData();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Categories derived from the actual fetched products, not hardcoded
+  const categories = useMemo(
+    () => Array.from(new Set(products.map((p) => p.category))).sort(),
+    [products]
+  );
 
   function handleFilterChange(key, value) {
     setFilters((prev) => {
@@ -110,25 +95,35 @@ export default function AccessoriesPage() {
       const arr = prev[key];
       return {
         ...prev,
-        [key]: arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value],
+        [key]: arr.includes(value)
+          ? arr.filter((v) => v !== value)
+          : [...arr, value],
       };
     });
   }
 
   const filtered = useMemo(() => {
-    let list = PRODUCTS.filter((p) => {
-      if (filters.collections.length && !filters.collections.includes(p.category)) return false;
-      if (filters.colors.length && !p.colors.some((c) => filters.colors.includes(c.name))) return false;
+    let list = products.filter((p) => {
+      if (filters.collections.length && !filters.collections.includes(p.category))
+        return false;
+      if (
+        filters.colors.length &&
+        !p.colors.some((c) => filters.colors.includes(c.name))
+      )
+        return false;
       if (!priceInRange(p.price, filters.price)) return false;
       return true;
     });
 
-    if (sort === "price-asc")  list = [...list].sort((a, b) => a.price - b.price);
+    if (sort === "price-asc") list = [...list].sort((a, b) => a.price - b.price);
     if (sort === "price-desc") list = [...list].sort((a, b) => b.price - a.price);
-    if (sort === "newest")     list = [...list].reverse();
+    if (sort === "newest")
+      list = [...list].sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
 
     return list;
-  }, [filters, sort]);
+  }, [products, filters, sort]);
 
   const activeCount = [
     filters.colors.length,
@@ -139,8 +134,7 @@ export default function AccessoriesPage() {
 
   return (
     <div className="bg-[#F8F5EE] min-h-screen" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-
-      {/* ── Hero Banner ───────────────────────────────────── */}
+      {/* Hero Banner */}
       <section className="relative h-56 md:h-72 overflow-hidden bg-[#5E6B58]">
         <img
           src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1400&q=80"
@@ -168,7 +162,7 @@ export default function AccessoriesPage() {
         </div>
       </section>
 
-      {/* ── Breadcrumb ────────────────────────────────────── */}
+      {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-6 md:px-8 pt-5 pb-1">
         <nav className="flex items-center gap-2 text-[11px] text-[#999] uppercase tracking-wider">
           <a href="/" className="hover:text-[#5E6B58] transition-colors">Home</a>
@@ -179,9 +173,8 @@ export default function AccessoriesPage() {
         </nav>
       </div>
 
-      {/* ── Toolbar ───────────────────────────────────────── */}
+      {/* Toolbar */}
       <div className="max-w-7xl mx-auto px-6 md:px-8 py-5 flex items-center justify-between border-b border-[#E4E0D8]">
-        {/* Mobile filter toggle */}
         <button
           onClick={() => setSidebarOpen(true)}
           className="flex items-center gap-2 text-[11px] uppercase tracking-[2px] font-semibold
@@ -193,10 +186,9 @@ export default function AccessoriesPage() {
         </button>
 
         <p className="hidden lg:block text-[12px] text-[#999]">
-          {filtered.length} products
+          {loading ? "Loading…" : `${filtered.length} products`}
         </p>
 
-        {/* Sort */}
         <div className="relative ml-auto">
           <button
             onClick={() => setSortOpen(!sortOpen)}
@@ -209,8 +201,7 @@ export default function AccessoriesPage() {
           </button>
 
           {sortOpen && (
-            <ul className="absolute right-0 top-full mt-1 bg-white border border-[#E4E0D8]
-                           shadow-lg z-30 w-48 py-1">
+            <ul className="absolute right-0 top-full mt-1 bg-white border border-[#E4E0D8] shadow-lg z-30 w-48 py-1">
               {SORT_OPTIONS.map((opt) => (
                 <li key={opt.value}>
                   <button
@@ -218,8 +209,7 @@ export default function AccessoriesPage() {
                     className={`w-full text-left px-4 py-2.5 text-[12px] transition-colors
                                 ${sort === opt.value
                                   ? "bg-[#F0EDE8] text-[#5E6B58] font-semibold"
-                                  : "text-[#555] hover:bg-[#F8F5EE] hover:text-[#5E6B58]"
-                                }`}
+                                  : "text-[#555] hover:bg-[#F8F5EE] hover:text-[#5E6B58]"}`}
                   >
                     {opt.label}
                   </button>
@@ -230,28 +220,30 @@ export default function AccessoriesPage() {
         </div>
       </div>
 
-      {/* ── Main Layout ───────────────────────────────────── */}
+      {/* Main Layout */}
       <div className="max-w-7xl mx-auto px-6 md:px-8 py-8 flex gap-10">
-
-        {/* Desktop Sidebar */}
         <div className="hidden lg:block w-56 flex-shrink-0">
           <FilterSidebar
             filters={filters}
             onChange={handleFilterChange}
             onClear={() => setFilters(EMPTY_FILTERS)}
             totalResults={filtered.length}
-            accessoryCategories={CATEGORIES}
+            accessoryCategories={categories}
           />
         </div>
 
-        {/* Grid */}
         <div className="flex-1 min-w-0">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-32">
+              <p className="text-[13px] text-[#999]">Loading accessories…</p>
+            </div>
+          ) : error ? (
             <div className="flex flex-col items-center justify-center py-32 text-center gap-4">
-              <p
-                className="text-[22px] text-[#5E6B58]"
-                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-              >
+              <p className="text-[15px] text-[#9E4A2F]">{error}</p>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-32 text-center gap-4">
+              <p className="text-[22px] text-[#5E6B58]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                 No products found
               </p>
               <p className="text-[13px] text-[#999]">Try adjusting or clearing your filters.</p>
@@ -274,15 +266,10 @@ export default function AccessoriesPage() {
         </div>
       </div>
 
-      {/* ── Mobile Sidebar Drawer ─────────────────────────── */}
+      {/* Mobile Sidebar Drawer */}
       {sidebarOpen && (
         <>
-          {/* Overlay */}
-          <div
-            className="fixed inset-0 bg-black/40 z-40 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-          {/* Drawer */}
+          <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
           <div className="fixed inset-y-0 left-0 w-72 bg-[#F8F5EE] z-50 lg:hidden flex flex-col shadow-2xl">
             <div className="flex items-center justify-between px-6 py-5 border-b border-[#E4E0D8]">
               <p className="text-[11px] uppercase tracking-[3px] font-bold text-[#2D2D2D]">Filters</p>
@@ -296,7 +283,7 @@ export default function AccessoriesPage() {
                 onChange={handleFilterChange}
                 onClear={() => setFilters(EMPTY_FILTERS)}
                 totalResults={filtered.length}
-                accessoryCategories={CATEGORIES}
+                accessoryCategories={categories}
               />
             </div>
             <div className="px-6 py-5 border-t border-[#E4E0D8]">
@@ -311,7 +298,6 @@ export default function AccessoriesPage() {
           </div>
         </>
       )}
-
     </div>
   );
 }

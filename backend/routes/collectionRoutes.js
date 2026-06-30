@@ -31,7 +31,7 @@ const {
 const { protect, adminOnly } = require("../middleware/authMiddleware");
 
 
-router.get(":slug", getCollectionBySlug);
+// router.get(":slug", getCollectionBySlug);
 router.get("/men",          getMenPage);
 router.get("/women",        getWomenProducts);
 router.get("/kids",         getKidsPage);

@@ -1,43 +1,8 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { SlidersHorizontal, X, ChevronDown } from "lucide-react";
 import ProductCard from "../../components/ProductCard";
 import FilterSidebar from "../../components/FilterSidebar";
-
-/* ── Mock Products ──────────────────────────────────────────── */
-const PRODUCTS = [
-  {
-    id: 1,
-    name: "Floral Anarkali Set",
-    category: "Dresses",
-    price: 4200,
-    originalPrice: 5200,
-    badge: "New",
-    colors: [
-      { name: "Blush", hex: "#E8C5B0" },
-      { name: "Ivory", hex: "#F5F0E8" },
-    ],
-    images: [
-      "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600&q=80",
-      "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=80",
-    ],
-  },
-  {
-    id: 2,
-    name: "Banarasi Silk Saree",
-    category: "Sarees",
-    price: 8900,
-    badge: "Best Seller",
-    colors: [
-      { name: "Gold", hex: "#C8A96B" },
-      { name: "Rust", hex: "#9E4A2F" },
-    ],
-    images: [
-      "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600&q=80",
-      "https://images.unsplash.com/photo-1618244972963-dbad68f8f3b9?w=600&q=80",
-    ],
-  },
-];
 
 const CATEGORIES = [
   "Sarees",
@@ -47,7 +12,6 @@ const CATEGORIES = [
   "Bottoms",
   "Accessories",
 ];
-const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 
 const SORT_OPTIONS = [
   { label: "Featured", value: "featured" },
@@ -56,12 +20,56 @@ const SORT_OPTIONS = [
   { label: "Newest First", value: "newest" },
 ];
 
-const EMPTY_FILTERS = { colors: [], sizes: [], price: null, collections: [] };
+// Frontend sort value -> backend SORT_MAP key
+const SORT_PARAM_MAP = {
+  featured: undefined, // let backend default (newest) apply
+  "price-asc": "price_asc",
+  "price-desc": "price_desc",
+  newest: "newest",
+};
 
-function priceInRange(price, range) {
-  if (!range) return true;
-  const [min, max] = range.split("-").map(Number);
-  return price >= min && price <= max;
+const EMPTY_FILTERS = { colors: [], sizes: [], price: null, collections: [] };
+const PAGE_SIZE = 12;
+const API_BASE = "http://localhost:5000/api/collections/women";
+
+function normalizeProduct(p) {
+  const colorMap = new Map();
+  (p.variants || []).forEach((v) => {
+    if (v.color && !colorMap.has(v.color)) {
+      colorMap.set(v.color, { name: v.color, hex: v.colorCode || v.hex || "#C8A96B" });
+    }
+  });
+
+  return {
+    id: p._id,
+    name: p.title,
+    category: (p.tags && p.tags[0]) || p.category?.name || "Women",
+    price: p.discountedPrice ?? p.price,
+    originalPrice: p.discountedPrice ? p.price : undefined,
+    badge: p.isNewArrival ? "New" : p.isBestSeller ? "Best Seller" : undefined,
+    colors: Array.from(colorMap.values()),
+    images: (p.images || []).map((img) => (typeof img === "string" ? img : img.url)),
+    createdAt: p.createdAt,
+  };
+}
+
+function buildQuery({ page, sort, filters }) {
+  const params = new URLSearchParams();
+  params.set("page", page);
+  params.set("limit", PAGE_SIZE);
+
+  const sortParam = SORT_PARAM_MAP[sort];
+  if (sortParam) params.set("sort", sortParam);
+
+  if (filters.collections.length) params.set("tag", filters.collections[0]);
+  if (filters.colors.length) params.set("colors", filters.colors.join(","));
+  if (filters.price) {
+    const [min, max] = filters.price.split("-");
+    if (min) params.set("minPrice", min);
+    if (max) params.set("maxPrice", max);
+  }
+
+  return params.toString();
 }
 
 /* ── Page ───────────────────────────────────────────────────── */
@@ -70,6 +78,51 @@ export default function WomenPage() {
   const [sort, setSort] = useState("featured");
   const [sortOpen, setSortOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [products, setProducts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchPage = useCallback(
+    async (pageNum, { append }) => {
+      append ? setLoadingMore(true) : setLoading(true);
+      setError(null);
+      try {
+        const query = buildQuery({ page: pageNum, sort, filters });
+        const response = await fetch(`${API_BASE}?${query}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        const normalized = (data.products || []).map(normalizeProduct);
+
+        setProducts((prev) => (append ? [...prev, ...normalized] : normalized));
+        setPages(data.pages || 1);
+        setTotal(data.total ?? normalized.length);
+        setPage(pageNum);
+      } catch (err) {
+        console.error("Error fetching women's products:", err);
+        setError("Couldn't load products. Please try again.");
+      } finally {
+        append ? setLoadingMore(false) : setLoading(false);
+      }
+    },
+    [sort, filters]
+  );
+
+  // Refetch from page 1 whenever filters or sort change
+  useEffect(() => {
+    fetchPage(1, { append: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, sort]);
+
+  function handleLoadMore() {
+    if (page < pages && !loadingMore) {
+      fetchPage(page + 1, { append: true });
+    }
+  }
 
   function handleFilterChange(key, value) {
     setFilters((prev) => {
@@ -84,28 +137,8 @@ export default function WomenPage() {
     });
   }
 
-  const filtered = useMemo(() => {
-    let list = PRODUCTS.filter((p) => {
-      if (
-        filters.collections.length &&
-        !filters.collections.includes(p.category)
-      )
-        return false;
-      if (
-        filters.colors.length &&
-        !p.colors.some((c) => filters.colors.includes(c.name))
-      )
-        return false;
-      if (!priceInRange(p.price, filters.price)) return false;
-      return true;
-    });
-    if (sort === "price-asc")
-      list = [...list].sort((a, b) => a.price - b.price);
-    if (sort === "price-desc")
-      list = [...list].sort((a, b) => b.price - a.price);
-    if (sort === "newest") list = [...list].reverse();
-    return list;
-  }, [filters, sort]);
+  // Server already applies filters/sort/pagination — render products as-is
+  const filtered = products;
 
   const activeCount = [
     filters.colors.length,
@@ -113,6 +146,8 @@ export default function WomenPage() {
     filters.price ? 1 : 0,
     filters.collections.length,
   ].reduce((a, b) => a + b, 0);
+
+  const hasMore = page < pages;
 
   return (
     <div
@@ -173,7 +208,9 @@ export default function WomenPage() {
       <div className="max-w-7xl mx-auto px-6 md:px-8 pt-6 pb-2">
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           <button
-            onClick={() => setFilters(EMPTY_FILTERS)}
+            onClick={() =>
+              setFilters((prev) => ({ ...EMPTY_FILTERS, colors: prev.colors }))
+            }
             className={`flex-shrink-0 px-5 py-2 text-[11px] uppercase tracking-[2px] font-semibold
                         border transition-all duration-200
                         ${
@@ -220,7 +257,7 @@ export default function WomenPage() {
         </button>
 
         <p className="hidden lg:block text-[12px] text-[#999]">
-          {filtered.length} products
+          {loading ? "Loading…" : `${total} products`}
         </p>
 
         {/* Sort */}
@@ -270,14 +307,22 @@ export default function WomenPage() {
             filters={filters}
             onChange={handleFilterChange}
             onClear={() => setFilters(EMPTY_FILTERS)}
-            totalResults={filtered.length}
+            totalResults={total}
             accessoryCategories={CATEGORIES}
           />
         </div>
 
         {/* Grid */}
         <div className="flex-1 min-w-0">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-32">
+              <p className="text-[13px] text-[#999]">Loading…</p>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-32 text-center gap-4">
+              <p className="text-[15px] text-[#9E4A2F]">{error}</p>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-32 text-center gap-4">
               <p
                 className="text-[22px] text-[#5E6B58]"
@@ -306,15 +351,20 @@ export default function WomenPage() {
               </div>
 
               {/* Load More */}
-              <div className="text-center mt-14">
-                <button
-                  className="px-10 py-3 border border-[#5E6B58] text-[#5E6B58] text-[11px]
-                             uppercase tracking-[3px] font-semibold hover:bg-[#5E6B58]
-                             hover:text-[#F8F5EE] transition-all duration-200"
-                >
-                  Load More
-                </button>
-              </div>
+              {hasMore && (
+                <div className="text-center mt-14">
+                  <button
+                    onClick={handleLoadMore}
+                    disabled={loadingMore}
+                    className="px-10 py-3 border border-[#5E6B58] text-[#5E6B58] text-[11px]
+                               uppercase tracking-[3px] font-semibold hover:bg-[#5E6B58]
+                               hover:text-[#F8F5EE] transition-all duration-200
+                               disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loadingMore ? "Loading…" : "Load More"}
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -341,7 +391,7 @@ export default function WomenPage() {
                 filters={filters}
                 onChange={handleFilterChange}
                 onClear={() => setFilters(EMPTY_FILTERS)}
-                totalResults={filtered.length}
+                totalResults={total}
                 accessoryCategories={CATEGORIES}
               />
             </div>
@@ -351,7 +401,7 @@ export default function WomenPage() {
                 className="w-full py-3 bg-[#5E6B58] text-[#F8F5EE] text-[11px] uppercase
                            tracking-[3px] font-semibold hover:bg-[#4a5546] transition-colors"
               >
-                View {filtered.length} Products
+                View {total} Products
               </button>
             </div>
           </div>
