@@ -1,3 +1,6 @@
+const express = require("express");
+const router = express.Router();
+
 const {
   getAllUsers,
   getUserById,
@@ -32,3 +35,5 @@ router.put("/address/default", setDefaultAddress);
 
 // Keep this LAST
 router.get("/:userId", getUserById);
+
+module.exports = router;

@@ -72,6 +72,7 @@ const loginUser = async (req, res) => {
         status: user.status,
         profileImage: user.profileImage,
         address: user.address,
+        dob: user.dob,
       },
     });
   } catch (err) {
@@ -337,7 +338,7 @@ const deleteAccount = async (req, res) => {
 /* ---------------- UPDATE USER ---------------- */
 const updateUser = async (req, res) => {
   try {
-    const { userId, firstName, lastName, email, phone, address, role } =
+    const { userId, firstName, lastName, email, phone, address, role, dob } =
       req.body;
 
     if (!userId) {
@@ -369,6 +370,8 @@ const updateUser = async (req, res) => {
 
     // Optional (mainly for admin panel)
     if (role !== undefined) user.role = role;
+
+    if(dob !== undefined) user.dob = dob;
 
     await user.save();
 

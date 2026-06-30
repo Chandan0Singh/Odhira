@@ -80,6 +80,10 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
 
+    dob: {
+      type: Date,
+    },
+
     status: {
       type: String,
       enum: ["active", "blocked"],

@@ -29,7 +29,7 @@ export default function ProfilePage() {
         lastName: user.lastName || "",
         email: user.email || "",
         phone: user.phone || "",
-        dob: user.dob || "",
+        dob: user.dob ? user.dob.split("T")[0] : "",
       });
     }
   }, [user]);
@@ -87,7 +87,7 @@ export default function ProfilePage() {
           lastName: formData.lastName.trim(),
           email: formData.email.trim(),
           phone: formData.phone.trim(),
-          // dob isn't part of the User schema yet — see note below
+          dob: formData.dob,
         }),
       });
 
