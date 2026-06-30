@@ -1,6 +1,3 @@
-const express = require("express");
-const router = express.Router();
-
 const {
   getAllUsers,
   getUserById,
@@ -9,29 +6,29 @@ const {
   updateUser,
   blockUser,
   getFilteredUsers,
+
+  // Address Controllers
+  getAddresses,
+  addAddress,
+  updateAddress,
+  deleteAddress,
+  setDefaultAddress,
 } = require("../controllers/userController");
 
-
-/* ---------------- GET ALL USERS ---------------- */
+// Existing routes...
 router.get("/users", getAllUsers);
-
-/* ---------------- UPDATE USER ---------------- */
 router.put("/update", updateUser);
-
-/* ---------------- CHANGE USER ROLE ---------------- */
 router.put("/role", changeUserRole);
-
-/* ---------------- BLOCK / UNBLOCK USER ---------------- */
 router.put("/block", blockUser);
-
-/* ---------------- DELETE USER ---------------- */
 router.delete("/delete", deleteAccount);
-
-/* ---------------- SEARCH USERS ---------------- */
 router.get("/search", getFilteredUsers);
 
-/* ---------------- GET USER BY ID ---------------- */
+// Address Routes
+router.get("/:userId/addresses", getAddresses);
+router.post("/address", addAddress);
+router.put("/address", updateAddress);
+router.delete("/address", deleteAddress);
+router.put("/address/default", setDefaultAddress);
+
+// Keep this LAST
 router.get("/:userId", getUserById);
-
-
-module.exports = router;
