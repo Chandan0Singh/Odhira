@@ -164,9 +164,9 @@ async function getFlagPage(flagKey, meta, req, res) {
 // ─── EXPORTED HANDLERS ───────────────────────────────────────────────────────
 
 // Category pages
-const getMenPage = (req, res) => {
+const getMenPage = async (req, res) => {
   try {
-    const data = Category.findOne({
+    const data = await Category.findOne({
       slug: "men",
       status: "Active",
     });
@@ -178,10 +178,20 @@ const getMenPage = (req, res) => {
       });
     }
 
-    res.status(200).json({
+    const products = await Product.find({
+      category: data._id,
+      status: "Active",
+    })
+      .populate("category", "name slug")
+      .populate("collection", "name slug")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
       success: true,
-      data,
+      count: products.length,
+      products,
     });
+
   } catch (err) {
     res.status(500).json({ message: "Server Error", error: err.message });
   }
