@@ -12,11 +12,16 @@ export default function UserDashboard() {
   const [totalUsers, setTotalUsers] = useState(0);
   const [editPopup, setEditPopup] = useState(false);
   const [addPopup, setAddPopup] = useState(false);
+  const [addError, setAddError] = useState("");
+  const [adding, setAdding] = useState(false);
 
   const [newUser, setNewUser] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
+    phone: "",
     password: "",
+    confirmPassword: "",
     role: "user",
   });
 
@@ -26,28 +31,59 @@ export default function UserDashboard() {
     email: "",
   });
 
-  const handleAddUser = async () => {
-  try {
-    const { data } = await axios.post(
-      "http://localhost:5000/api/auth/signup",
-      newUser
-    );
-
-    setUsers((prev) => [data.user, ...prev]);
-
+  const resetNewUser = () =>
     setNewUser({
-      name: "",
+      firstName: "",
+      lastName: "",
       email: "",
+      phone: "",
       password: "",
+      confirmPassword: "",
       role: "user",
     });
 
-    setAddPopup(false);
+  // ─── ADD USER (matches signupUser controller) ─────────────────────
+  const handleAddUser = async () => {
+    setAddError("");
 
-  } catch (error) {
-    console.log("error :", error.response?.data || error.message);
-  }
-};
+    // Mirror backend validation client-side for instant feedback
+    if (!newUser.firstName || newUser.firstName.length < 2) {
+      return setAddError("First name must be at least 2 characters long");
+    }
+    if (!newUser.lastName || newUser.lastName.length < 2) {
+      return setAddError("Last name must be at least 2 characters long");
+    }
+    if (!/\S+@\S+\.\S+/.test(newUser.email)) {
+      return setAddError("Invalid email address");
+    }
+    if (!/^[6-9]\d{9}$/.test(newUser.phone)) {
+      return setAddError("Invalid phone number");
+    }
+    if (!newUser.password || newUser.password.length < 6) {
+      return setAddError("Password must be at least 6 characters long");
+    }
+    if (newUser.password !== newUser.confirmPassword) {
+      return setAddError("Passwords do not match");
+    }
+
+    setAdding(true);
+    try {
+      const { data } = await axios.post(
+        "http://localhost:5000/api/auth/signup",
+        newUser
+      );
+
+      setUsers((prev) => [data.user, ...prev]);
+      setTotalUsers((prev) => prev + 1);
+      resetNewUser();
+      setAddPopup(false);
+    } catch (error) {
+      setAddError(error.response?.data?.message || "Failed to create user");
+      console.log("error :", error.response?.data || error.message);
+    } finally {
+      setAdding(false);
+    }
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -210,8 +246,6 @@ export default function UserDashboard() {
   ).length;
   const adminCount = users.filter((user) => user.role === "admin").length;
 
-  console.log("userList : ", users);
-
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       {/* Header */}
@@ -332,7 +366,7 @@ export default function UserDashboard() {
                     <td className="p-5">
                       <div className="flex items-center gap-4">
                         <div className="w-14 h-14 rounded-full bg-black text-white flex items-center justify-center text-xl font-bold">
-                          {user.name.charAt(0)}
+                          {user.name?.charAt(0)}
                         </div>
 
                         <div>
@@ -539,22 +573,46 @@ export default function UserDashboard() {
         </div>
       )}
 
+      {/* ADD POPUP — matches signupUser controller fields */}
       {addPopup && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-xl">
+          <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-xl max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold mb-5">Add New User</h2>
 
-            {/* NAME */}
+            {addError && (
+              <div className="mb-4 bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl">
+                {addError}
+              </div>
+            )}
+
+            {/* FIRST NAME */}
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">Name</label>
+              <label className="block text-sm font-medium mb-2">First Name</label>
 
               <input
                 type="text"
-                value={newUser.name}
+                value={newUser.firstName}
                 onChange={(e) =>
                   setNewUser({
                     ...newUser,
-                    name: e.target.value,
+                    firstName: e.target.value,
+                  })
+                }
+                className="w-full border rounded-xl px-4 py-3 outline-none"
+              />
+            </div>
+
+            {/* LAST NAME */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">Last Name</label>
+
+              <input
+                type="text"
+                value={newUser.lastName}
+                onChange={(e) =>
+                  setNewUser({
+                    ...newUser,
+                    lastName: e.target.value,
                   })
                 }
                 className="w-full border rounded-xl px-4 py-3 outline-none"
@@ -578,6 +636,24 @@ export default function UserDashboard() {
               />
             </div>
 
+            {/* PHONE */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">Phone</label>
+
+              <input
+                type="tel"
+                value={newUser.phone}
+                placeholder="10-digit number starting 6-9"
+                onChange={(e) =>
+                  setNewUser({
+                    ...newUser,
+                    phone: e.target.value,
+                  })
+                }
+                className="w-full border rounded-xl px-4 py-3 outline-none"
+              />
+            </div>
+
             {/* PASSWORD */}
             <div className="mb-4">
               <label className="block text-sm font-medium mb-2">Password</label>
@@ -589,6 +665,25 @@ export default function UserDashboard() {
                   setNewUser({
                     ...newUser,
                     password: e.target.value,
+                  })
+                }
+                className="w-full border rounded-xl px-4 py-3 outline-none"
+              />
+            </div>
+
+            {/* CONFIRM PASSWORD */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">
+                Confirm Password
+              </label>
+
+              <input
+                type="password"
+                value={newUser.confirmPassword}
+                onChange={(e) =>
+                  setNewUser({
+                    ...newUser,
+                    confirmPassword: e.target.value,
                   })
                 }
                 className="w-full border rounded-xl px-4 py-3 outline-none"
@@ -618,7 +713,11 @@ export default function UserDashboard() {
             {/* BUTTONS */}
             <div className="flex justify-end gap-3">
               <button
-                onClick={() => setAddPopup(false)}
+                onClick={() => {
+                  setAddPopup(false);
+                  setAddError("");
+                  resetNewUser();
+                }}
                 className="border px-5 py-2 rounded-xl"
               >
                 Cancel
@@ -626,9 +725,10 @@ export default function UserDashboard() {
 
               <button
                 onClick={handleAddUser}
-                className="bg-black text-white px-5 py-2 rounded-xl"
+                disabled={adding}
+                className="bg-black text-white px-5 py-2 rounded-xl disabled:opacity-50"
               >
-                Create User
+                {adding ? "Creating..." : "Create User"}
               </button>
             </div>
           </div>
