@@ -7,29 +7,33 @@ import Image from "@tiptap/extension-image";
 import { useRouter } from "next/navigation";
 import ConfirmPopup from "@/app/Components/confimationpopup";
 
+const EMPTY_DOC = `
+  <h1>Start Writing Your Blog...</h1>
+  <p>Add headings, paragraphs, images and lists.</p>
+`;
+
 export default function BlogsDashboard() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
-  const [featuredImage, setFeaturedImage] = useState(null);
+  const [featuredImage, setFeaturedImage] = useState("");
   const [blogs, setBlogs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchCategory, setSearchCategory] = useState("All Categories");
   const [searchStatus, setSearchStatus] = useState("All Status");
   const [blogCount, setBlogCount] = useState("");
-  const [views, setViews] = useState("")
+  const [views, setViews] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [selectedBlogId, setSelectedBlogId] = useState("");
   const [editBlog, setEditBlog] = useState(false);
   const [description, setDescription] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   const router = useRouter();
 
   const editor = useEditor({
     extensions: [StarterKit, Image],
-    content: `
-      <h1>Start Writing Your Blog...</h1>
-      <p>Add headings, paragraphs, images and lists.</p>
-    `,
+    content: EMPTY_DOC,
   });
 
   const addImage = () => {
@@ -40,53 +44,73 @@ export default function BlogsDashboard() {
     }
   };
 
-  const saveBlog = async (blogStatus) => {
+  const resetForm = () => {
+    setTitle("");
+    setCategory("");
+    setDescription("");
+    setFeaturedImage("");
+    editor?.commands.setContent(EMPTY_DOC);
+  };
+
+  // ─── FETCH ALL BLOGS (used on load and after create/delete) ───────
+  const getAllBlogs = async () => {
     try {
-      const blogContent = editor.getHTML();
+      const response = await axios.get("http://localhost:5000/api/blog");
 
-      const formData = new FormData();
-
-      formData.append("title", title);
-      formData.append("category", category);
-      formData.append("description", description);
-      formData.append("content", blogContent);
-      formData.append("status", blogStatus);
-
-      if (featuredImage) {
-        formData.append("featuredImage", featuredImage);
-      }
-
-      const { data } = await axios.post(
-        "http://localhost:5000/api/blog/create",
-        formData,
-      );
-
-      alert(`Blog ${blogStatus} Successfully`);
-
-      setEditBlog(false)
-
+      setBlogs(response.data.data);
+      setBlogCount(response.data.count);
+      setViews(response.data.totalViews);
     } catch (error) {
-      console.log(error);
-
-      alert("Something went wrong");
+      console.log("error while geting blog : ", error);
     }
   };
 
   useEffect(() => {
-    const getAllBlogs = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/api/blog");
-
-        setBlogs(response.data.data);
-        setBlogCount(response.data.count);
-        setViews(response.data.totalViews);
-      } catch (error) {
-        console.log("error while geting blog : ", error);
-      }
-    };
-
     getAllBlogs();
   }, []);
+
+  // ─── CREATE BLOG (matches createBlog controller: title, category,
+  //     content, status required; description, featuredImage optional) ──
+  const saveBlog = async (blogStatus) => {
+    setSaveError("");
+
+    const blogContent = editor.getHTML();
+
+    if (!title.trim()) {
+      return setSaveError("Blog title is required");
+    }
+    if (!category) {
+      return setSaveError("Please select a category");
+    }
+    if (!blogContent || blogContent === EMPTY_DOC.trim()) {
+      return setSaveError("Blog content cannot be empty");
+    }
+
+    setSaving(true);
+    try {
+      await axios.post("http://localhost:5000/api/blog/create", {
+        title,
+        category,
+        description,
+        content: blogContent,
+        status: blogStatus,
+        featuredImage,
+      });
+
+      alert(`Blog ${blogStatus} Successfully`);
+
+      resetForm();
+      setEditBlog(false);
+
+      // refresh the list + stats so the new blog shows up immediately
+      await getAllBlogs();
+    } catch (error) {
+      console.log(error);
+      setSaveError(error.response?.data?.message || "Something went wrong");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleDelete = async (value) => {
     // close popup
@@ -96,14 +120,15 @@ export default function BlogsDashboard() {
     if (!value) return;
 
     try {
-      const response = await axios.delete(
-        "http://localhost:5000/api/blog/delete",
-        {
-          data: {
-            blogid: selectedBlogId,
-          },
+      await axios.delete("http://localhost:5000/api/blog/delete", {
+        data: {
+          blogid: selectedBlogId,
         },
-      );
+      });
+
+      // reflect deletion immediately + refresh stats
+      setBlogs((prev) => prev.filter((b) => b._id !== selectedBlogId));
+      getAllBlogs();
     } catch (error) {
       console.log(error);
     }
@@ -158,17 +183,27 @@ export default function BlogsDashboard() {
           </div>
 
           <button
-          onClick={()=>setEditBlog(!editBlog)}
-           className="bg-black text-white px-5 py-3 rounded-2xl shadow hover:scale-105 transition">
+            onClick={() => {
+              setSaveError("");
+              setEditBlog(!editBlog);
+            }}
+            className="bg-black text-white px-5 py-3 rounded-2xl shadow hover:scale-105 transition"
+          >
             + Create Blog
           </button>
         </div>
 
-        { editBlog && (
+        {editBlog && (
           <div className="bg-white rounded-3xl mb-[4rem] border shadow-sm p-6 mt-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
               Create New Blog
             </h2>
+
+            {saveError && (
+              <div className="mb-5 bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl">
+                {saveError}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
               <input
@@ -192,42 +227,54 @@ export default function BlogsDashboard() {
             </div>
 
             {/* Description */}
-<div className="mb-6">
-  <label className="block text-gray-700 font-medium mb-2">
-    Blog Description
-  </label>
+            <div className="mb-6">
+              <label className="block text-gray-700 font-medium mb-2">
+                Blog Description
+              </label>
 
-  <textarea
-    placeholder="Write short blog description..."
-    value={description}
-    onChange={(e) => setDescription(e.target.value)}
-    rows={4}
-    maxLength={300}
-    className="w-full border rounded-2xl px-4 py-3 outline-none resize-none"
-  />
+              <textarea
+                placeholder="Write short blog description..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                maxLength={300}
+                className="w-full border rounded-2xl px-4 py-3 outline-none resize-none"
+              />
 
-  <p className="text-sm text-gray-500 mt-2">
-    {description.length}/300 characters
-  </p>
-</div>
+              <p className="text-sm text-gray-500 mt-2">
+                {description.length}/300 characters
+              </p>
+            </div>
 
             {/* Featured Image */}
             <div className="mb-6">
               <label className="block text-gray-700 font-medium mb-2">
-                Featured Image
+                Featured Image URL
               </label>
 
               <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setFeaturedImage(e.target.files[0])}
+                type="url"
+                placeholder="https://example.com/image.jpg"
+                value={featuredImage}
+                onChange={(e) => setFeaturedImage(e.target.value)}
                 className="w-full border rounded-xl px-4 py-3 bg-white outline-none"
               />
+
+              {featuredImage && (
+                <img
+                  src={featuredImage}
+                  alt="Preview"
+                  onError={(e) => (e.target.style.display = "none")}
+                  onLoad={(e) => (e.target.style.display = "block")}
+                  className="h-32 mt-3 object-cover border rounded-xl"
+                />
+              )}
             </div>
 
             {/* Toolbar */}
             <div className="flex flex-wrap gap-3 p-4 border rounded-t-2xl bg-gray-50">
               <button
+                type="button"
                 onClick={() => editor.chain().focus().toggleBold().run()}
                 className="bg-black text-white px-4 py-2 rounded-xl"
               >
@@ -235,6 +282,7 @@ export default function BlogsDashboard() {
               </button>
 
               <button
+                type="button"
                 onClick={() => editor.chain().focus().toggleItalic().run()}
                 className="bg-black text-white px-4 py-2 rounded-xl"
               >
@@ -242,6 +290,7 @@ export default function BlogsDashboard() {
               </button>
 
               <button
+                type="button"
                 onClick={() =>
                   editor.chain().focus().toggleHeading({ level: 1 }).run()
                 }
@@ -251,6 +300,7 @@ export default function BlogsDashboard() {
               </button>
 
               <button
+                type="button"
                 onClick={() => editor.chain().focus().toggleBulletList().run()}
                 className="bg-black text-white px-4 py-2 rounded-xl"
               >
@@ -258,6 +308,7 @@ export default function BlogsDashboard() {
               </button>
 
               <button
+                type="button"
                 onClick={addImage}
                 className="bg-blue-600 text-white px-4 py-2 rounded-xl"
               >
@@ -277,16 +328,30 @@ export default function BlogsDashboard() {
             <div className="flex flex-wrap gap-4 mt-6">
               <button
                 onClick={() => saveBlog("Published")}
-                className="bg-black text-white px-6 py-3 rounded-xl hover:scale-105 transition"
+                disabled={saving}
+                className="bg-black text-white px-6 py-3 rounded-xl hover:scale-105 transition disabled:opacity-50"
               >
-                Publish Blog
+                {saving ? "Publishing..." : "Publish Blog"}
               </button>
 
               <button
                 onClick={() => saveBlog("Draft")}
-                className="bg-gray-200 text-gray-800 px-6 py-3 rounded-xl hover:bg-gray-300 transition"
+                disabled={saving}
+                className="bg-gray-200 text-gray-800 px-6 py-3 rounded-xl hover:bg-gray-300 transition disabled:opacity-50"
               >
-                Save Draft
+                {saving ? "Saving..." : "Save Draft"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  resetForm();
+                  setSaveError("");
+                  setEditBlog(false);
+                }}
+                className="border px-6 py-3 rounded-xl hover:bg-gray-50 transition"
+              >
+                Cancel
               </button>
             </div>
           </div>
@@ -388,83 +453,94 @@ export default function BlogsDashboard() {
               </thead>
 
               <tbody>
-                {blogs.map((blog) => (
-                  <tr
-                    key={blog._id}
-                    className="border-b hover:bg-gray-50 transition"
-                  >
-                    <td className="p-5">
-                      <h3 className="font-semibold text-lg text-gray-800">
-                        {blog.title}
-                      </h3>
-                    </td>
+                {blogs.length > 0 ? (
+                  blogs.map((blog) => (
+                    <tr
+                      key={blog._id}
+                      className="border-b hover:bg-gray-50 transition"
+                    >
+                      <td className="p-5">
+                        <h3 className="font-semibold text-lg text-gray-800">
+                          {blog.title}
+                        </h3>
+                      </td>
 
-                    <td className="p-5 text-gray-700">{blog.author}</td>
+                      <td className="p-5 text-gray-700">{blog.author}</td>
 
-                    <td className="p-5">
-                      <span className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
-                        {blog.category}
-                      </span>
-                    </td>
+                      <td className="p-5">
+                        <span className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
+                          {blog.category}
+                        </span>
+                      </td>
 
-                    <td className="p-5 font-semibold text-gray-800">
-                      {blog.views}
-                    </td>
+                      <td className="p-5 font-semibold text-gray-800">
+                        {blog.views}
+                      </td>
 
-                    <td className="p-5">
-                      <span
-                        className={`px-4 py-2 rounded-full text-sm font-medium ${
-                          blog.status === "Published"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}
-                      >
-                        {blog.status}
-                      </span>
-                    </td>
-
-                    <td className="p-5 text-gray-600">
-                      {new Date(blog.updatedAt).toDateString("en-GB")}
-                    </td>
-
-                    <td className="p-5">
-                      <div className="flex flex-wrap gap-3">
-                        <button
-                          onClick={() => router.push(`/blog/${blog._id}`)}
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl transition"
+                      <td className="p-5">
+                        <span
+                          className={`px-4 py-2 rounded-full text-sm font-medium ${
+                            blog.status === "Published"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-yellow-100 text-yellow-700"
+                          }`}
                         >
-                          View
-                        </button>
+                          {blog.status}
+                        </span>
+                      </td>
 
-                        <button
-                          onClick={() =>
-                            router.push(`/admin/blogs/edit/${blog._id}`)
-                          }
-                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl transition"
-                        >
-                          Edit
-                        </button>
+                      <td className="p-5 text-gray-600">
+                        {new Date(blog.updatedAt).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </td>
 
-                        <button
-                          onClick={() => {
-                            setSelectedBlogId(blog._id);
-                            setShowPopup(true);
-                          }}
-                          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl transition"
-                        >
-                          Delete
-                        </button>
-                      </div>
+                      <td className="p-5">
+                        <div className="flex flex-wrap gap-3">
+                          <button
+                            onClick={() => router.push(`/journal/${blog._id}`)}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl transition"
+                          >
+                            View
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              router.push(`/admin/blogs/edit/${blog._id}`)
+                            }
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl transition"
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setSelectedBlogId(blog._id);
+                              setShowPopup(true);
+                            }}
+                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl transition"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="7" className="text-center py-10 text-gray-500">
+                      No Blogs Found
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
         </div>
-
-        {/* Blog Editor */}
       </div>
+
       {showPopup && (
         <ConfirmPopup
           message="Are you sure you want to delete this blog?"

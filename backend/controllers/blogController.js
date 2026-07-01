@@ -4,13 +4,22 @@ const path = require("path");
 
 const createBlog = async (req, res) => {
   try {
-    const { title, category, content, status, description } = req.body;
+    const {
+      title,
+      category,
+      content,
+      status,
+      description,
+      featuredImage: featuredImageUrl,
+    } = req.body;
 
     let featuredImage = "";
 
-    // image upload
+    // Uploaded file takes priority; otherwise fall back to a pasted URL
     if (req.file) {
       featuredImage = req.file.path;
+    } else if (featuredImageUrl) {
+      featuredImage = featuredImageUrl;
     }
 
     const blog = await Blog.create({
@@ -49,7 +58,7 @@ const getAllBlogs = async (req, res) => {
       data: blogs,
     });
   } catch (error) {
-    res.status(500).josn({
+    res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -98,9 +107,8 @@ const deleteBlog = async (req, res) => {
       });
     }
 
-    // Delete image
-    if (blog.featuredImage) {
-      // Remove starting slash
+    // Delete image only if it's a locally uploaded file, not a pasted URL
+    if (blog.featuredImage && !/^https?:\/\//i.test(blog.featuredImage)) {
       const imagePath = path.join(
         __dirname,
         "..",
@@ -192,40 +200,11 @@ const filterBlogs = async (req, res) => {
 
     if (search) {
       filter.$or = [
-        {
-          title: {
-            $regex: search,
-            $options: "i",
-          },
-        },
-
-        {
-          description: {
-            $regex: search,
-            $options: "i",
-          },
-        },
-
-        {
-          content: {
-            $regex: search,
-            $options: "i",
-          },
-        },
-
-        {
-          category: {
-            $regex: search,
-            $options: "i",
-          },
-        },
-
-        {
-          author: {
-            $regex: search,
-            $options: "i",
-          },
-        },
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+        { content: { $regex: search, $options: "i" } },
+        { category: { $regex: search, $options: "i" } },
+        { author: { $regex: search, $options: "i" } },
       ];
     }
 
