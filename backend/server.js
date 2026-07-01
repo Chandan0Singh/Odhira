@@ -9,6 +9,7 @@ const user = require('./routes/user')
 const blog = require("./routes/blogRoutes");
 const order = require("./routes/orderRouter");
 const collectionRoutes = require("./routes/collectionRoutes");
+const categoriesRoutes = require("./routes/categoriesRoutes");
 const lookbookRoutes = require("./routes/lookbookRoutes");
 
 require('dotenv').config();
@@ -25,6 +26,7 @@ app.use("/uploads", express.static("uploads"));
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use("/api/collections", collectionRoutes);
+app.use("/api/categories", categoriesRoutes);
 app.use("/api/lookbook", lookbookRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/user', user);
