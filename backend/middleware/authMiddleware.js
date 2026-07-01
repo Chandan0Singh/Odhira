@@ -28,9 +28,7 @@
 //   }
 // };
 
-
 // module.exports = authMiddleware;
-
 
 // middleware/authMiddleware.js
 const jwt = require("jsonwebtoken");
@@ -38,12 +36,15 @@ const User = require("../models/User");
 
 const protect = async (req, res, next) => {
   try {
+    console.log("console.log(req.headers);", req.headers);
     const token = req.headers.authorization?.split(" ")[1];
+    console.log("Token from headers:", token); // Debugging line
     if (!token) return res.status(401).json({ message: "Not authorized" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = await User.findById(decoded.id).select("-password");
     if (!req.user) return res.status(401).json({ message: "User not found" });
+    console.log("Authenticated user:", req.user); // Debugging line
 
     next();
   } catch (err) {

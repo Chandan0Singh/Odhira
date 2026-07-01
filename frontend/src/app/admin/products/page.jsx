@@ -3,28 +3,38 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
-import { Search, Plus, Pencil, Trash2, Package, Tag, Star, TrendingUp } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Pencil,
+  Trash2,
+  Package,
+  Tag,
+  Star,
+  TrendingUp,
+} from "lucide-react";
 
 const API = "http://localhost:5000/api/products";
 
 export default function AdminProductsDashboard() {
-  const [products, setProducts]   = useState([]);
-  const [search, setSearch]       = useState("");
-  const [loading, setLoading]     = useState(true);
-  const [filter, setFilter]       = useState("all"); // all | active | draft | sale | featured
+  const [products, setProducts] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all"); // all | active | draft | sale | featured
 
   // ─── FETCH ──────────────────────────────────────────────────────────────────
   const fetchProducts = async () => {
     try {
       setLoading(true);
       const params = {};
-      if (filter === "active")   params.status      = "Active";
-      if (filter === "draft")    params.status      = "Draft";
-      if (filter === "sale")     params.isSale      = true;
-      if (filter === "featured") params.isFeatured  = true;
+      if (filter === "active") params.status = "Active";
+      if (filter === "draft") params.status = "Draft";
+      if (filter === "sale") params.isSale = true;
+      if (filter === "featured") params.isFeatured = true;
 
       const { data } = await axios.get(API, { params });
       setProducts(data.products || data || []);
+      console.log("Fetched Products:", data);
     } catch (err) {
       console.error("Fetch Products Error:", err);
     } finally {
@@ -32,7 +42,9 @@ export default function AdminProductsDashboard() {
     }
   };
 
-  useEffect(() => { fetchProducts(); }, [filter]);
+  useEffect(() => {
+    fetchProducts();
+  }, [filter]);
 
   // ─── DELETE ─────────────────────────────────────────────────────────────────
   const handleDelete = async (id) => {
@@ -46,26 +58,29 @@ export default function AdminProductsDashboard() {
   };
 
   // ─── DERIVED ────────────────────────────────────────────────────────────────
-  const activeCount   = products.filter((p) => p.status === "Active").length;
-  const saleCount     = products.filter((p) => p.isSale).length;
+  const activeCount = products.filter((p) => p.status === "Active").length;
+  const saleCount = products.filter((p) => p.isSale).length;
   const featuredCount = products.filter((p) => p.isFeatured).length;
 
-  const filtered = products.filter((p) =>
-    p?.title?.toLowerCase().includes(search.toLowerCase()) ||
-    p?.category?.name?.toLowerCase().includes(search.toLowerCase()) ||
-    p?.fabric?.toLowerCase().includes(search.toLowerCase())
+  const filtered = products.filter(
+    (p) =>
+      p?.title?.toLowerCase().includes(search.toLowerCase()) ||
+      p?.category?.name?.toLowerCase().includes(search.toLowerCase()) ||
+      p?.fabric?.toLowerCase().includes(search.toLowerCase()),
   );
 
   // ─── HELPERS ────────────────────────────────────────────────────────────────
   const statusBadge = (status) => {
     const map = {
-      Active:   "bg-green-100 text-green-700",
-      Draft:    "bg-yellow-100 text-yellow-700",
+      Active: "bg-green-100 text-green-700",
+      Draft: "bg-yellow-100 text-yellow-700",
       Inactive: "bg-gray-100 text-gray-600",
       Archived: "bg-red-100 text-red-600",
     };
     return (
-      <span className={`text-xs font-medium px-2 py-1 rounded-full ${map[status] || "bg-gray-100"}`}>
+      <span
+        className={`text-xs font-medium px-2 py-1 rounded-full ${map[status] || "bg-gray-100"}`}
+      >
         {status}
       </span>
     );
@@ -82,8 +97,12 @@ export default function AdminProductsDashboard() {
   const displayPrice = (p) =>
     p.discountedPrice ? (
       <div>
-        <span className="font-semibold text-gray-800">₹{p.discountedPrice}</span>
-        <span className="text-xs text-gray-400 line-through ml-1">₹{p.price}</span>
+        <span className="font-semibold text-gray-800">
+          ₹{p.discountedPrice}
+        </span>
+        <span className="text-xs text-gray-400 line-through ml-1">
+          ₹{p.price}
+        </span>
         <span className="text-xs text-green-600 ml-1">
           ({Math.round(((p.price - p.discountedPrice) / p.price) * 100)}% off)
         </span>
@@ -95,12 +114,13 @@ export default function AdminProductsDashboard() {
   // ─── RENDER ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-4xl font-bold text-gray-800">Products</h1>
-          <p className="text-gray-500 mt-1">Manage all your products from one place.</p>
+          <p className="text-gray-500 mt-1">
+            Manage all your products from one place.
+          </p>
         </div>
         <Link href="/admin/add-product">
           <button className="flex items-center gap-2 bg-black text-white px-5 py-3 rounded-2xl hover:scale-105 transition shadow-md">
@@ -112,16 +132,41 @@ export default function AdminProductsDashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Total Products", value: products.length,  icon: <Package size={24} />,   color: "bg-blue-50" },
-          { label: "Active",         value: activeCount,       icon: <Tag size={24} />,        color: "bg-green-50" },
-          { label: "On Sale",        value: saleCount,         icon: <TrendingUp size={24} />, color: "bg-orange-50" },
-          { label: "Featured",       value: featuredCount,     icon: <Star size={24} />,       color: "bg-purple-50" },
+          {
+            label: "Total Products",
+            value: products.length,
+            icon: <Package size={24} />,
+            color: "bg-blue-50",
+          },
+          {
+            label: "Active",
+            value: activeCount,
+            icon: <Tag size={24} />,
+            color: "bg-green-50",
+          },
+          {
+            label: "On Sale",
+            value: saleCount,
+            icon: <TrendingUp size={24} />,
+            color: "bg-orange-50",
+          },
+          {
+            label: "Featured",
+            value: featuredCount,
+            icon: <Star size={24} />,
+            color: "bg-purple-50",
+          },
         ].map((stat) => (
-          <div key={stat.label} className="bg-white rounded-3xl p-5 shadow-sm border">
+          <div
+            key={stat.label}
+            className="bg-white rounded-3xl p-5 shadow-sm border"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-sm">{stat.label}</p>
-                <h2 className="text-3xl font-bold mt-1 text-gray-800">{stat.value}</h2>
+                <h2 className="text-3xl font-bold mt-1 text-gray-800">
+                  {stat.value}
+                </h2>
               </div>
               <div className={`${stat.color} p-3 rounded-2xl`}>{stat.icon}</div>
             </div>
@@ -165,8 +210,22 @@ export default function AdminProductsDashboard() {
           <table className="w-full min-w-[900px]">
             <thead className="bg-gray-50 border-b">
               <tr>
-                {["Product", "Category", "Price", "Stock", "Rating", "Flags", "Status", "Actions"].map((h) => (
-                  <th key={h} className="text-left p-4 text-sm font-semibold text-gray-600">{h}</th>
+                {[
+                  "Product",
+                  "Category",
+                  "Price",
+                  "Stock",
+                  "Rating",
+                  "Flags",
+                  "Status",
+                  "Actions",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="text-left p-4 text-sm font-semibold text-gray-600"
+                  >
+                    {h}
+                  </th>
                 ))}
               </tr>
             </thead>
@@ -183,8 +242,10 @@ export default function AdminProductsDashboard() {
                 </tr>
               ) : filtered.length > 0 ? (
                 filtered.map((p) => (
-                  <tr key={p._id} className="border-b hover:bg-gray-50 transition">
-
+                  <tr
+                    key={p._id}
+                    className="border-b hover:bg-gray-50 transition"
+                  >
                     {/* Product */}
                     <td className="p-4">
                       <div className="flex items-center gap-3">
@@ -200,8 +261,12 @@ export default function AdminProductsDashboard() {
                           </div>
                         )}
                         <div>
-                          <p className="font-semibold text-gray-800 text-sm leading-tight">{p.title}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">ID: {p._id?.slice(0, 8)}</p>
+                          <p className="font-semibold text-gray-800 text-sm leading-tight">
+                            {p.title}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            ID: {p._id?.slice(0, 8)}
+                          </p>
                           {p.fabric && (
                             <p className="text-xs text-gray-500">{p.fabric}</p>
                           )}
@@ -211,9 +276,13 @@ export default function AdminProductsDashboard() {
 
                     {/* Category */}
                     <td className="p-4">
-                      <p className="text-sm text-gray-700">{p.category?.name || "—"}</p>
+                      <p className="text-sm text-gray-700">
+                        {p.category?.name || "—"}
+                      </p>
                       {p.collection?.name && (
-                        <p className="text-xs text-gray-400">{p.collection.name}</p>
+                        <p className="text-xs text-gray-400">
+                          {p.collection.name}
+                        </p>
                       )}
                     </td>
 
@@ -222,7 +291,9 @@ export default function AdminProductsDashboard() {
 
                     {/* Stock */}
                     <td className="p-4">
-                      <span className={`text-sm font-medium ${p.totalStock === 0 ? "text-red-500" : "text-gray-700"}`}>
+                      <span
+                        className={`text-sm font-medium ${p.totalStock === 0 ? "text-red-500" : "text-gray-700"}`}
+                      >
                         {p.totalStock ?? 0}
                       </span>
                       {p.totalStock === 0 && (
@@ -233,24 +304,48 @@ export default function AdminProductsDashboard() {
                     {/* Rating */}
                     <td className="p-4">
                       <div className="flex items-center gap-1">
-                        <Star size={14} className="text-yellow-400 fill-yellow-400" />
+                        <Star
+                          size={14}
+                          className="text-yellow-400 fill-yellow-400"
+                        />
                         <span className="text-sm text-gray-700">
                           {p.averageRating?.toFixed(1) || "—"}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-400">{p.totalReviews || 0} reviews</p>
+                      <p className="text-xs text-gray-400">
+                        {p.totalReviews || 0} reviews
+                      </p>
                     </td>
 
                     {/* Flags */}
                     <td className="p-4">
                       <div className="flex flex-col gap-1">
-                        {p.isFeatured   && <span className="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full w-fit">Featured</span>}
-                        {p.isBestSeller && <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full w-fit">Best Seller</span>}
-                        {p.isNewArrival && <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full w-fit">New</span>}
-                        {p.isSale       && <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full w-fit">Sale</span>}
-                        {!p.isFeatured && !p.isBestSeller && !p.isNewArrival && !p.isSale && (
-                          <span className="text-xs text-gray-400">—</span>
+                        {p.isFeatured && (
+                          <span className="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full w-fit">
+                            Featured
+                          </span>
                         )}
+                        {p.isBestSeller && (
+                          <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full w-fit">
+                            Best Seller
+                          </span>
+                        )}
+                        {p.isNewArrival && (
+                          <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full w-fit">
+                            New
+                          </span>
+                        )}
+                        {p.isSale && (
+                          <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full w-fit">
+                            Sale
+                          </span>
+                        )}
+                        {!p.isFeatured &&
+                          !p.isBestSeller &&
+                          !p.isNewArrival &&
+                          !p.isSale && (
+                            <span className="text-xs text-gray-400">—</span>
+                          )}
                       </div>
                     </td>
 

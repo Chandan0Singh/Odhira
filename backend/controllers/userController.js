@@ -371,7 +371,7 @@ const updateUser = async (req, res) => {
     // Optional (mainly for admin panel)
     if (role !== undefined) user.role = role;
 
-    if(dob !== undefined) user.dob = dob;
+    if (dob !== undefined) user.dob = dob;
 
     await user.save();
 
@@ -623,7 +623,6 @@ const updateAddress = async (req, res) => {
     });
   }
 };
-
 
 const deleteAddress = async (req, res) => {
   try {
