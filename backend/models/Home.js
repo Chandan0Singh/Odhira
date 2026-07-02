@@ -23,10 +23,15 @@ const homeSchema = new mongoose.Schema(
         default: "",
       },
 
-      image: {
-        type: String,
-        default: "",
-      },
+      images: [
+        {
+          image: String,
+          alt: {
+            type: String,
+            default: "",
+          },
+        },
+      ],
     },
 
     brandStory: {
@@ -77,7 +82,7 @@ const homeSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 module.exports = mongoose.model("Home", homeSchema);
