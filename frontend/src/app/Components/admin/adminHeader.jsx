@@ -1,7 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutDashboard, Package, Users, FileText, Ticket, BarChart3, LogOut } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  Users,
+  FileText,
+  Ticket,
+  BarChart3,
+  LogOut,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 
@@ -18,6 +26,11 @@ export default function AdminHeader() {
     {
       name: "Dashboard",
       href: "/admin/dashboard",
+      icon: <LayoutDashboard size={18} />,
+    },
+    {
+      name: "Home",
+      href: "/admin/home",
       icon: <LayoutDashboard size={18} />,
     },
     {
@@ -50,7 +63,6 @@ export default function AdminHeader() {
   return (
     <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        
         {/* Logo */}
         <Link
           href="/admin/dashboard"
@@ -76,12 +88,8 @@ export default function AdminHeader() {
         {/* Right Section */}
         <div className="flex items-center gap-4">
           <div className="hidden md:block text-right">
-            <p className="text-sm font-medium">
-              {user?.name || "Admin"}
-            </p>
-            <p className="text-xs text-gray-500">
-              {user?.role}
-            </p>
+            <p className="text-sm font-medium">{user?.name || "Admin"}</p>
+            <p className="text-xs text-gray-500">{user?.role}</p>
           </div>
 
           <button
