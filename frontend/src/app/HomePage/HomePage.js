@@ -1,4 +1,5 @@
 import Link from "next/link";
+import HeroSlider from "../Components/HeroSlider";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -27,34 +28,7 @@ export default async function Home() {
   return (
     <main className="bg-[#F8F5EE]">
       {/* HERO */}
-      <section className="relative h-[85vh] overflow-hidden">
-        <img
-          src={home?.hero?.image || "/hero.jpg"}
-          alt={home?.hero?.title || "Hero banner"}
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-
-        <div className="absolute inset-0 bg-black/10" />
-
-        <div className="relative z-10 max-w-7xl mx-auto px-8 h-full flex items-center">
-          <div>
-            <h2 className="text-7xl text-[#2D2D2D] leading-none">
-              {home?.hero?.title || "Timeless Elegance"}
-            </h2>
-
-            <p className="mt-6 text-lg text-[#555] max-w-md">
-              {home?.hero?.subtitle ||
-                "Discover handcrafted luxury designed for modern elegance."}
-            </p>
-
-            <Link href={home?.hero?.buttonLink || "/shop"}>
-              <button className="mt-8 bg-[#4B5A43] text-white px-8 py-4 uppercase tracking-widest">
-                {home?.hero?.buttonText || "Shop Collection"}
-              </button>
-            </Link>
-          </div>
-        </div>
-      </section>
+      <HeroSlider hero={home?.hero} />
 
       {/* COLLECTIONS */}
       {categories?.length > 0 && (
@@ -130,9 +104,7 @@ export default async function Home() {
 
                       <div className="mt-2 flex items-center gap-3">
                         <p className="text-[#C5A46D]">
-                          {formatINR(
-                            product.discountedPrice || product.price
-                          )}
+                          {formatINR(product.discountedPrice || product.price)}
                         </p>
 
                         {product.discountedPrice && (
