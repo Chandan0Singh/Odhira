@@ -11,6 +11,7 @@ const order = require("./routes/orderRouter");
 const collectionRoutes = require("./routes/collectionRoutes");
 const categoriesRoutes = require("./routes/categoriesRoutes");
 const lookbookRoutes = require("./routes/lookbookRoutes");
+const homeRoutes = require("./routes/homeRoutes");
 
 require('dotenv').config();
 
@@ -33,6 +34,7 @@ app.use('/api/user', user);
 app.use("/api/blog", blog);
 app.use("/api/order", order);
 app.use("/api/payment", require("./routes/paymentRoutes"));
+app.use("/api/home", homeRoutes);
 
 app.get('/', (req, res) => {
   res.send('API running...');
