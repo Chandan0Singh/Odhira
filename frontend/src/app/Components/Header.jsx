@@ -1,10 +1,11 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, User, ShoppingBag, X, Menu } from "lucide-react";
 import LoginModal from "./LoginModal";
 import SignupModal from "./SignupModal";
 import { useAuth } from "../../context/AuthContext";
+import axios from "axios";
 
 export default function Header() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -12,8 +13,21 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
+  const [collections, setCollections] = useState([]);
 
-  console.log("User in Header:", user);
+  useEffect(() => {
+    fetchCollections();
+  }, []);
+
+  const fetchCollections = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/collections");
+
+      setCollections(res.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const navLinks = [
     { label: "Shop", href: "/shop" },
@@ -21,13 +35,10 @@ export default function Header() {
     {
       label: "Collections",
       href: "/collections",
-      submenu: [
-        { label: "Men", href: "/collections/men" },
-        { label: "Women", href: "/collections/women" },
-        { label: "Accessories", href: "/collections/accessories" },
-        { label: "New Arrivals", href: "/collections/new-arrivals" },
-        { label: "Sale", href: "/collections/sale" },
-      ],
+      submenu: collections.map((collection) => ({
+        label: collection.name,
+        href: `/collections/${collection.slug}`,
+      })),
     },
 
     { label: "Lookbook", href: "/lookbook" },
