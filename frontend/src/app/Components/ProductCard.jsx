@@ -20,7 +20,7 @@ export default function ProductCard({ product }) {
     }
 
     const res = await axios.post(
-      "http://localhost:5000/api/cart/add", // Replace with your backend URL
+      "http://localhost:5000/api/cart/add",
       {
         userId: user.id,
         productId: product._id,

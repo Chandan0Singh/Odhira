@@ -1,61 +1,84 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Minus, Plus, Trash2 } from "lucide-react";
+import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Floral Maxi Dress",
-      price: 2499,
-      quantity: 1,
-      image:
-        "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600&q=80",
-    },
-    {
-      id: 2,
-      name: "Designer Kurta Set",
-      price: 3999,
-      quantity: 1,
-      image:
-        "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600&q=80",
-    },
-  ]);
+  const { user } = useAuth();
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchCart();
+    }
+  }, [user]);
+
+  const fetchCart = async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/api/cart/${user.id}`);
+
+      setCartItems(res.data.items);
+    } catch (err) {
+      console.error(err);
+      setCartItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const increaseQty = (id) => {
     setCartItems((items) =>
       items.map((item) =>
-        item.id === id
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      )
+        item._id === id ? { ...item, quantity: item.quantity + 1 } : item,
+      ),
     );
   };
 
   const decreaseQty = (id) => {
     setCartItems((items) =>
       items.map((item) =>
-        item.id === id && item.quantity > 1
+        item._id === id && item.quantity > 1
           ? { ...item, quantity: item.quantity - 1 }
-          : item
-      )
+          : item,
+      ),
     );
   };
 
-  const removeItem = (id) => {
-    setCartItems((items) =>
-      items.filter((item) => item.id !== id)
-    );
+  const removeItem = async (cartItemId) => {
+    try {
+      await axios.delete("http://localhost:5000/api/cart/remove", {
+        data: {
+          userId: user.id,
+          cartItemId,
+        },
+      });
+
+      fetchCart();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const subtotal = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
+    (acc, item) =>
+      acc +
+      (item.productId.discountedPrice || item.productId.price) * item.quantity,
+    0,
   );
 
   const shipping = subtotal > 5000 ? 0 : 199;
   const total = subtotal + shipping;
+
+  if (loading) {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      Loading...
+    </div>
+  );
+}
 
   return (
     <div className="bg-[#F8F5EE] min-h-screen">
@@ -105,12 +128,15 @@ export default function CartPage() {
           ) : (
             cartItems.map((item) => (
               <div
-                key={item.id}
+                key={item._id}
                 className="bg-white border border-[#E4E0D8] p-5 flex gap-5"
               >
                 <img
-                  src={item.image}
-                  alt={item.name}
+                  src={
+                    item.productId.images?.[0]?.url ||
+                    item.productId.images?.[0]
+                  }
+                  alt={item.productId.title}
                   className="w-28 h-36 object-cover"
                 />
 
@@ -121,16 +147,19 @@ export default function CartPage() {
                       fontFamily: "'Playfair Display', serif",
                     }}
                   >
-                    {item.name}
+                    {item.productId.title}
                   </h3>
 
                   <p className="mt-2 text-[#5E6B58] font-semibold">
-                    ₹{item.price.toLocaleString()}
+                    ₹
+                    {(
+                      item.productId.discountedPrice || item.productId.price
+                    ).toLocaleString()}
                   </p>
 
                   <div className="flex items-center gap-3 mt-5">
                     <button
-                      onClick={() => decreaseQty(item.id)}
+                      onClick={() => decreaseQty(item._id)}
                       className="w-9 h-9 border border-[#D5CFC6] flex items-center justify-center"
                     >
                       <Minus size={16} />
@@ -139,7 +168,7 @@ export default function CartPage() {
                     <span>{item.quantity}</span>
 
                     <button
-                      onClick={() => increaseQty(item.id)}
+                      onClick={() => increaseQty(item._id)}
                       className="w-9 h-9 border border-[#D5CFC6] flex items-center justify-center"
                     >
                       <Plus size={16} />
@@ -148,7 +177,7 @@ export default function CartPage() {
                 </div>
 
                 <button
-                  onClick={() => removeItem(item.id)}
+                  onClick={() => removeItem(item._id)}
                   className="text-red-500 self-start"
                 >
                   <Trash2 size={20} />
@@ -179,11 +208,7 @@ export default function CartPage() {
 
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span>
-                    {shipping === 0
-                      ? "Free"
-                      : `₹${shipping}`}
-                  </span>
+                  <span>{shipping === 0 ? "Free" : `₹${shipping}`}</span>
                 </div>
 
                 <hr className="border-[#E4E0D8]" />
