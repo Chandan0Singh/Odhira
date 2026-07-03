@@ -23,11 +23,11 @@ export default function AdminHeader() {
   };
 
   const links = [
-    {
-      name: "Dashboard",
-      href: "/admin/dashboard",
-      icon: <LayoutDashboard size={18} />,
-    },
+    // {
+    //   name: "Dashboard",
+    //   href: "/admin/dashboard",
+    //   icon: <LayoutDashboard size={18} />,
+    // },
     {
       name: "Home",
       href: "/admin/home",
@@ -47,6 +47,11 @@ export default function AdminHeader() {
       name: "Blogs",
       href: "/admin/blogs",
       icon: <FileText size={18} />,
+    },
+    {
+      name: "Lookbook",
+      href: "/admin/lookbook",
+      icon: <LayoutDashboard size={18} />,
     },
     {
       name: "Coupons",

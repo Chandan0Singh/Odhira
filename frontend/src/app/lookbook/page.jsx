@@ -16,6 +16,8 @@ export default function LookbookPage() {
 
       const result = await response.json();
 
+      console.log("Lookbook data:", result.data); // Log the fetched data for debugging
+
       setLooks(result.data);
     } catch (err) {
       console.error(err);
@@ -99,7 +101,7 @@ export default function LookbookPage() {
             >
               <div className="overflow-hidden">
                 <img
-                  src={look.coverImage}
+                  src={`http://localhost:5000${look.image}`}
                   alt={look.title}
                   className="w-full object-cover group-hover:scale-105 transition duration-700"
                 />
@@ -115,9 +117,7 @@ export default function LookbookPage() {
                   {look.title}
                 </h3>
 
-                <p className="mt-3 text-gray-600 text-sm">
-                  {look.description}
-                </p>
+                <p className="mt-3 text-gray-600 text-sm">{look.description}</p>
 
                 <button className="mt-5 text-[#5E6B58] uppercase tracking-[3px] text-xs font-semibold">
                   View Look

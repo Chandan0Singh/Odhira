@@ -104,7 +104,7 @@ const createLook = async (req, res) => {
       slug,
       status: status || "Active",
       featured: featured === "true" || featured === true,
-      image: `/uploads/${req.file.filename}`,
+      image: `/uploads/lookbook/${req.file.filename}`,
     });
 
     res.status(201).json({ success: true, data: look });
@@ -138,12 +138,13 @@ const updateLook = async (req, res) => {
     if (status !== undefined) look.status = status;
     if (featured !== undefined) look.featured = featured === "true" || featured === true;
 
+    // Replace image if a new one was uploaded
     if (req.file) {
       if (look.image) {
         const oldPath = path.join(__dirname, "..", look.image);
-        fs.unlink(oldPath, () => {});
+        fs.unlink(oldPath, () => {}); // ignore errors if file missing
       }
-      look.image = `/uploads/${req.file.filename}`;
+      look.image = `/uploads/lookbook/${req.file.filename}`;
     }
 
     await look.save();
