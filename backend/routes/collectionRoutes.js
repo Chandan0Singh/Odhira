@@ -20,7 +20,7 @@ const {
   getLimitedEditionPage,
   getTrendingPage,
   getFeaturedPage,
-  
+  getCollectionProductsBySlug,
   getAllCollections,
   getCollectionById,
   getCollectionBySlug,
@@ -31,7 +31,6 @@ const {
 const { protect, adminOnly } = require("../middleware/authMiddleware");
 
 
-// router.get(":slug", getCollectionBySlug);
 router.get("/men",          getMenPage);
 router.get("/women",        getWomenProducts);
 router.get("/kids",         getKidsPage);
@@ -54,6 +53,7 @@ router.get("/featured", getFeaturedPage);
 router.get("/",              getAllCollections);
 router.get("/slug/:slug",    getCollectionBySlug);
 router.get("/:id",           getCollectionById);
+router.get("/page/:slug", getCollectionProductsBySlug);
 
 // ADMIN
 router.post("/",             protect, adminOnly, createCollection);

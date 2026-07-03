@@ -445,6 +445,92 @@ const getCollectionBySlug = async (req, res) => {
   }
 };
 
+const getCollectionProductsBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const collection = await Collection.findOne({
+      slug,
+      status: "Active",
+    });
+
+    if (!collection) {
+      return res.status(404).json({
+        success: false,
+        message: "Collection not found",
+      });
+    }
+
+    const products = await Product.find({
+      collection: collection._id,
+      status: "Active",
+    })
+      .populate("category", "name slug")
+      .populate("collection", "name slug")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      pageTitle: collection.name,
+      pageDescription: collection.description,
+      collectionId: collection._id,
+      collectionSlug: collection.slug,
+      banner: collection.banner,
+      count: products.length,
+      products,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: err.message,
+    });
+  }
+};
+
+// const getCollectionBySlug = async (req, res) => {
+//   try {
+//     const { slug } = req.params;
+
+//     const category = await Category.findOne({
+//       slug,
+//       status: "Active",
+//     });
+
+//     if (!category) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Category not found",
+//       });
+//     }
+
+//     const products = await Product.find({
+//       category: category._id,
+//       status: "Active",
+//     })
+//       .populate("category", "name slug")
+//       .populate("collection", "name slug")
+//       .sort({ createdAt: -1 });
+
+//     return res.status(200).json({
+//       success: true,
+//       category: {
+//         _id: category._id,
+//         name: category.name,
+//         slug: category.slug,
+//       },
+//       count: products.length,
+//       products,
+//     });
+//   } catch (err) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Server Error",
+//       error: err.message,
+//     });
+//   }
+// };
+
 // POST /api/collections  — create (admin)
 const createCollection = async (req, res) => {
   try {
@@ -518,7 +604,7 @@ module.exports = {
   getLimitedEditionPage,
   getTrendingPage,
   getFeaturedPage,
-
+getCollectionProductsBySlug,
   getAllCollections,
   getCollectionById,
   getCollectionBySlug,
