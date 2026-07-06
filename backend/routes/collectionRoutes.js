@@ -52,8 +52,9 @@ router.get("/featured", getFeaturedPage);
 // PUBLIC
 router.get("/",              getAllCollections);
 router.get("/slug/:slug",    getCollectionBySlug);
-router.get("/:id",           getCollectionById);
 router.get("/page/:slug", getCollectionProductsBySlug);
+
+router.get("/:id",           getCollectionById);
 
 // ADMIN
 router.post("/",             protect, adminOnly, createCollection);

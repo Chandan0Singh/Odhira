@@ -316,7 +316,7 @@ export default function ProductsPage() {
                   )}
 
                   <Link
-                    href={`/shop/${p._id}`}
+                    href={`/products/${p.slug}`}
                     className="block text-center border border-[#5E6B58] text-[#5E6B58] py-2 text-sm hover:bg-[#5E6B58] hover:text-white transition"
                   >
                     View Product
