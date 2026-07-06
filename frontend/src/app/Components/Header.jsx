@@ -30,7 +30,7 @@ export default function Header() {
   };
 
   const navLinks = [
-    { label: "Shop", href: "/shop" },
+    { label: "Shop", href: "/products" },
 
     {
       label: "Collections",

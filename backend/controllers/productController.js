@@ -9,24 +9,32 @@ require("../models/Collection");
 const getAllProducts = async (req, res) => {
   try {
     const {
-      category, collection, status, isFeatured, isSale,
-      isBestSeller, isNewArrival, sort, page = 1, limit = 20,
+      category,
+      collection,
+      status,
+      isFeatured,
+      isSale,
+      isBestSeller,
+      isNewArrival,
+      sort,
+      page = 1,
+      limit = 20,
     } = req.query;
 
     const filter = {};
-    if (category)     filter.category   = category;
-    if (collection)   filter.collection = collection;
-    if (status)       filter.status     = status;
-    if (isFeatured)   filter.isFeatured   = isFeatured === "true";
-    if (isSale)       filter.isSale       = isSale === "true";
+    if (category) filter.category = category;
+    if (collection) filter.collection = collection;
+    if (status) filter.status = status;
+    if (isFeatured) filter.isFeatured = isFeatured === "true";
+    if (isSale) filter.isSale = isSale === "true";
     if (isBestSeller) filter.isBestSeller = isBestSeller === "true";
     if (isNewArrival) filter.isNewArrival = isNewArrival === "true";
 
     const sortMap = {
-      price_asc:  { price: 1 },
+      price_asc: { price: 1 },
       price_desc: { price: -1 },
-      newest:     { createdAt: -1 },
-      popular:    { sold: -1 },
+      newest: { createdAt: -1 },
+      popular: { sold: -1 },
     };
     const sortQuery = sortMap[sort] || { createdAt: -1 };
 
@@ -52,6 +60,20 @@ const getAllProducts = async (req, res) => {
 };
 
 // ─── GET PRODUCT BY SLUG ──────────────────────────────────────────────────────
+// const getProductBySlug = async (req, res) => {
+//   try {
+//     const product = await Product.findOne({ slug: req.params.slug })
+//       .populate("category", "name slug")
+//       .populate("collection", "name slug")
+//       .populate("reviews.user", "name profileImage");
+
+//     if (!product) return res.status(404).json({ message: "Product not found" });
+//     res.json(product);
+//   } catch (err) {
+//     res.status(500).json({ message: "Server Error", error: err.message });
+//   }
+// };
+
 const getProductBySlug = async (req, res) => {
   try {
     const product = await Product.findOne({ slug: req.params.slug })
@@ -59,10 +81,33 @@ const getProductBySlug = async (req, res) => {
       .populate("collection", "name slug")
       .populate("reviews.user", "name profileImage");
 
-    if (!product) return res.status(404).json({ message: "Product not found" });
-    res.json(product);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    const relatedProducts = await Product.find({
+      category: product.category._id,
+      _id: { $ne: product._id },
+      status: "Active",
+    })
+      .populate("category", "name slug")
+      .populate("collection", "name slug")
+      .limit(8);
+
+    res.status(200).json({
+      success: true,
+      product,
+      relatedProducts,
+    });
   } catch (err) {
-    res.status(500).json({ message: "Server Error", error: err.message });
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: err.message,
+    });
   }
 };
 
@@ -95,7 +140,10 @@ const getSaleProducts = async (req, res) => {
 // ─── GET NEW ARRIVALS ─────────────────────────────────────────────────────────
 const getNewArrivals = async (req, res) => {
   try {
-    const products = await Product.find({ isNewArrival: true, status: "Active" })
+    const products = await Product.find({
+      isNewArrival: true,
+      status: "Active",
+    })
       .populate("category", "name slug")
       .sort({ createdAt: -1 })
       .limit(12);
@@ -108,7 +156,10 @@ const getNewArrivals = async (req, res) => {
 // ─── GET BEST SELLERS ─────────────────────────────────────────────────────────
 const getBestSellers = async (req, res) => {
   try {
-    const products = await Product.find({ isBestSeller: true, status: "Active" })
+    const products = await Product.find({
+      isBestSeller: true,
+      status: "Active",
+    })
       .populate("category", "name slug")
       .sort({ sold: -1 })
       .limit(12);
@@ -134,11 +185,19 @@ const getFeaturedProducts = async (req, res) => {
 // ─── GET EXPLORE DATA (by tags) ───────────────────────────────────────────────
 const getExploreData = async (req, res) => {
   try {
-    const products = await Product.find({ status: "Active" })
-      .populate("category", "name slug");
+    const products = await Product.find({ status: "Active" }).populate(
+      "category",
+      "name slug",
+    );
 
     const tags = ["classic", "premium", "trending", "popular"];
-    const exploreData = { classic: [], premium: [], trending: [], popular: [], all: [] };
+    const exploreData = {
+      classic: [],
+      premium: [],
+      trending: [],
+      popular: [],
+      all: [],
+    };
 
     for (const product of products) {
       let added = false;
@@ -223,7 +282,7 @@ const addReview = async (req, res) => {
     if (!product) return res.status(404).json({ message: "Product not found" });
 
     const alreadyReviewed = product.reviews.find(
-      (r) => r.user?.toString() === req.user._id.toString()
+      (r) => r.user?.toString() === req.user._id.toString(),
     );
     if (alreadyReviewed)
       return res.status(400).json({ message: "Already reviewed" });
@@ -243,7 +302,9 @@ const createProduct = async (req, res) => {
     const saved = await product.save();
     res.status(201).json(saved);
   } catch (err) {
-    res.status(500).json({ message: "Failed to create product", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to create product", error: err.message });
   }
 };
 
@@ -251,12 +312,15 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const updated = await Product.findByIdAndUpdate(req.params.id, req.body, {
-      new: true, runValidators: true,
+      new: true,
+      runValidators: true,
     });
     if (!updated) return res.status(404).json({ message: "Product not found" });
     res.json(updated);
   } catch (err) {
-    res.status(500).json({ message: "Failed to update product", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to update product", error: err.message });
   }
 };
 
@@ -267,7 +331,9 @@ const deleteProduct = async (req, res) => {
     if (!deleted) return res.status(404).json({ message: "Product not found" });
     res.json({ message: "Product deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Failed to delete product", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to delete product", error: err.message });
   }
 };
 
