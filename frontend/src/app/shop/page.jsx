@@ -45,7 +45,10 @@ export default function ProductsPage() {
 
       const { data } = await axios.get(`${API}/products`, { params });
 
+      console.log("Fetched products:", data.products);
+
       setProducts(data.products || []);
+      console.log("dsafc", data.products);
       setTotal(data.total   || 0);
       setPages(data.pages   || 1);
     } catch (err) {
@@ -313,7 +316,7 @@ export default function ProductsPage() {
                   )}
 
                   <Link
-                    href={`/products/${p.slug || p._id}`}
+                    href={`/shop/${p._id}`}
                     className="block text-center border border-[#5E6B58] text-[#5E6B58] py-2 text-sm hover:bg-[#5E6B58] hover:text-white transition"
                   >
                     View Product

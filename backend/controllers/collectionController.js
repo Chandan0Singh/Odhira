@@ -449,6 +449,8 @@ const getCollectionProductsBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
 
+    console.log("Fetching products for collection slug:", slug);
+
     const collection = await Collection.findOne({
       slug,
       status: "Active",
