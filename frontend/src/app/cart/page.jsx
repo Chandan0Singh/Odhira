@@ -105,7 +105,49 @@ export default function CartPage() {
   };
 
   const handlePlaceOrder = async (address) => {
-    console.log(address);
+    try {
+      const payload = {
+        userId: user.id,
+        shippingAddress: address,
+        paymentMethod: "COD", // Assuming Cash on Delivery for now
+        subtotal,
+        shippingCharge: shipping,
+        discount: 0, // Assuming no discount for now
+        totalAmount: total,
+        items: cartItems.map((item) => ({
+          productId: item.productId,
+          name: item.name,
+          image: item.image,
+          price: item.price,
+          quantity: item.quantity,
+          size: item.size || "",
+          color: item.color || "",
+        })),
+      };
+
+      const response = await fetch("http://localhost:5000/api/order/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+
+      console.log("Order Created:", data);
+
+          alert("Order placed successfully!");
+
+    setShowCheckoutModal(false);
+
+    } catch (error) {
+      console.error("Error placing order:", error);
+    }
   };
 
   return (
