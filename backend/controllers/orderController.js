@@ -1,5 +1,5 @@
 const Order = require("../models/orderSchema");
-const User = require("../models/User")
+const User = require("../models/User");
 
 const getAllOrders = async (req, res) => {
   try {
@@ -21,9 +21,7 @@ const getAllOrders = async (req, res) => {
   }
 };
 
-
-
-const filterOrders = async (req, res) => { 
+const filterOrders = async (req, res) => {
   try {
     const { search, deliveryStatus, paymentStatus } = req.query;
 
@@ -71,10 +69,51 @@ const filterOrders = async (req, res) => {
   }
 };
 
-
 const createOrder = async (req, res) => {
   try {
-    const order = Order.create(req.body);
+    const {
+      userId,
+      items,
+      shippingAddress,
+      paymentMethod,
+      subtotal,
+      shippingCharge,
+      discount,
+      totalAmount,
+    } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+
+    if (!items || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Order items are required",
+      });
+    }
+
+    if (!shippingAddress) {
+      return res.status(400).json({
+        success: false,
+        message: "Shipping address is required",
+      });
+    }
+
+    const order = await Order.create({
+      userId,
+      items,
+      shippingAddress,
+      paymentMethod,
+      subtotal,
+      shippingCharge,
+      discount,
+      totalAmount,
+    });
+
     res.status(201).json({
       success: true,
       data: order,
