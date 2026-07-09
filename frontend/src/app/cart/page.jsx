@@ -12,6 +12,7 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [userAddresses, setUserAddresses] = useState([]);
+  const [cartId, setCartId] = useState(null);
 
   console.log("User in CartPage:", user); // Debugging line
 
@@ -24,6 +25,7 @@ export default function CartPage() {
   const fetchCart = async () => {
     try {
       const res = await axios.get(`http://localhost:5000/api/cart/${user.id}`);
+      setCartId(res.data._id); // Store the cart ID for later use
 
       setCartItems(res.data.items);
     } catch (err) {
@@ -104,6 +106,28 @@ export default function CartPage() {
     fetchUserData();
   };
 
+  const clearCart = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/cart/clear", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: user.id }), // Send userId to clear the entire cart
+      });
+
+      const data = await response.json();
+
+      console.log("Cart cleared:", data);
+
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      console.error("Error clearing cart:", error);
+    }
+  };
+
   const handlePlaceOrder = async (address) => {
     try {
       const payload = {
@@ -115,10 +139,11 @@ export default function CartPage() {
         discount: 0, // Assuming no discount for now
         totalAmount: total,
         items: cartItems.map((item) => ({
-          productId: item.productId,
-          name: item.name,
-          image: item.image,
-          price: item.price,
+          productId: item.productId._id,
+          name: item.productId.title,
+          image:
+            item.productId.images?.[0]?.url || item.productId.images?.[0] || "",
+          price: item.productId.discountedPrice || item.productId.price,
           quantity: item.quantity,
           size: item.size || "",
           color: item.color || "",
@@ -139,12 +164,11 @@ export default function CartPage() {
         throw new Error(data.message);
       }
 
-      console.log("Order Created:", data);
+      await clearCart(); // Clear the cart after placing the order
 
-          alert("Order placed successfully!");
+      alert("Order placed successfully!");
 
-    setShowCheckoutModal(false);
-
+      setShowCheckoutModal(false);
     } catch (error) {
       console.error("Error placing order:", error);
     }
