@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useAuth } from "../../../context/AuthContext";
 
 const API = "http://localhost:5000/api";
 
 export default function ProductPage() {
   const { slug } = useParams();
+  const { user } = useAuth();
 
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -14,6 +16,8 @@ export default function ProductPage() {
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
+
+  console.log("user:", user);
 
   useEffect(() => {
     if (!slug) return;
@@ -68,6 +72,37 @@ export default function ProductPage() {
     (product.discountedPrice ? product.price : null);
 
   const outOfStock = selectedVariant ? selectedVariant.stock <= 0 : true;
+
+  const addToCart = async (id, quantity = 1, userId) => {
+    console.log("Adding to cart:", { id, quantity, userId });
+    try {
+      if (!userId) {
+        alert("Please login to add items to your cart.");
+        return;
+      }
+      const response = await fetch(`${API}/cart/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userId,
+          productId: id,
+          quantity: quantity,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to add to cart");
+      }
+
+      alert(data.message || "Item added to cart");
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+    }
+  };
 
   return (
     <main className="max-w-7xl mx-auto px-6 py-10">
@@ -150,6 +185,7 @@ export default function ProductPage() {
 
           <div className="flex gap-4 mt-8">
             <button
+              onClick={() => addToCart(product._id, 1, user?.id)}
               disabled={outOfStock}
               className="bg-black text-white px-8 py-3 rounded disabled:opacity-40 disabled:cursor-not-allowed"
             >
@@ -177,16 +213,44 @@ export default function ProductPage() {
         <h2 className="text-2xl font-bold mb-6">Product Details</h2>
 
         <div className="grid md:grid-cols-2 gap-4">
-          <p><strong>Brand:</strong> {product.brand}</p>
-          <p><strong>Category:</strong> {product.category?.name}</p>
-          <p><strong>Collection:</strong> {product.collection?.name}</p>
-          <p><strong>Fabric:</strong> {product.fabric}</p>
-          {product.handwork && <p><strong>Handwork:</strong> {product.handwork}</p>}
-          {product.sleeveType && <p><strong>Sleeve:</strong> {product.sleeveType}</p>}
-          {product.neckline && <p><strong>Neckline:</strong> {product.neckline}</p>}
-          {product.fit && <p><strong>Fit:</strong> {product.fit}</p>}
-          <p><strong>Care:</strong> {product.careInstructions}</p>
-          <p><strong>Customizable:</strong> {product.customizable ? "Yes" : "No"}</p>
+          <p>
+            <strong>Brand:</strong> {product.brand}
+          </p>
+          <p>
+            <strong>Category:</strong> {product.category?.name}
+          </p>
+          <p>
+            <strong>Collection:</strong> {product.collection?.name}
+          </p>
+          <p>
+            <strong>Fabric:</strong> {product.fabric}
+          </p>
+          {product.handwork && (
+            <p>
+              <strong>Handwork:</strong> {product.handwork}
+            </p>
+          )}
+          {product.sleeveType && (
+            <p>
+              <strong>Sleeve:</strong> {product.sleeveType}
+            </p>
+          )}
+          {product.neckline && (
+            <p>
+              <strong>Neckline:</strong> {product.neckline}
+            </p>
+          )}
+          {product.fit && (
+            <p>
+              <strong>Fit:</strong> {product.fit}
+            </p>
+          )}
+          <p>
+            <strong>Care:</strong> {product.careInstructions}
+          </p>
+          <p>
+            <strong>Customizable:</strong> {product.customizable ? "Yes" : "No"}
+          </p>
         </div>
       </section>
 
