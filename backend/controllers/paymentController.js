@@ -1,25 +1,37 @@
 const { error } = require("console");
 const razorpay = require("../config/razorpay");
+// const razorpay =  require("../utils/razorpay")
 const crypto = require("crypto");
+const { options } = require("../routes/auth");
 
-const createOrder = async (req, res) => {
-  try {
-    const { amount } = req.body;
+const createRazorpayOrder = async (req, res)=>{
+  try{
+     console.log(req.body); 
+    const {amount} = req.body;
 
-    const order = await razorpay.orders.create({
+    const option = {
       amount: amount * 100,
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
+    };
+
+    const order = await razorpay.orders.create(option);
+
+    return res.status(200).json({
+      success: true,
+      order,
     });
 
-    res.status(200).json(order);
-  } catch (error) {
-    res.status(500).json({
+  } catch (error){
+
+    console.log("error : ", error)
+    return res.status(500).json({
       success: false,
-      message: error.message,
-    });
+      message: error.message
+    })
   }
-};
+
+}
 
 const verifyPayment = async (req, res) => {
   try {
@@ -52,4 +64,4 @@ const verifyPayment = async (req, res) => {
   }
 };
 
-module.exports = { createOrder, verifyPayment };
+module.exports = { createRazorpayOrder, verifyPayment };
