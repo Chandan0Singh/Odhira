@@ -110,13 +110,6 @@ export default function Header() {
                     <Search size={18} strokeWidth={1.5} />
                   </button>
 
-                  {/* <Link
-                    href="/account"
-                    aria-label="Account"
-                    className="hover:text-[#5E6B58] transition-colors"
-                  >
-                    <User size={18} strokeWidth={1.5} />
-                  </Link> */}
 
                   <div className="relative group">
                     <Link
