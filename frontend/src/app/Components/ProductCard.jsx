@@ -4,43 +4,40 @@ import { useState } from "react";
 import { Heart, ShoppingBag, Zap } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export default function ProductCard({ product }) {
+  const router = useRouter();
+
   const [wishlisted, setWishlisted] = useState(false);
 
   const { user } = useAuth();
 
-  console.log("ProductCard user:", user.id);
-
   const handleAddToCart = async () => {
-  try {
-    if (!user) {
-      alert("Please login first");
-      return;
-    }
+    try {
+      if (!user) {
+        alert("Please login first");
+        return;
+      }
 
-    const res = await axios.post(
-      "http://localhost:5000/api/cart/add",
-      {
+      const res = await axios.post("http://localhost:5000/api/cart/add", {
         userId: user.id,
         productId: product._id,
         quantity: 1,
-      }
-    );
+      });
 
-    console.log(res.data);
-    alert("Product added to cart!");
-  } catch (error) {
-    console.error(error);
+      console.log(res.data);
+      alert("Product added to cart!");
+    } catch (error) {
+      console.error(error);
 
-    alert(
-      error.response?.data?.message || "Failed to add product to cart"
-    );
-  }
-};
+      alert(error.response?.data?.message || "Failed to add product to cart");
+    }
+  };
 
   const handleBuyNow = () => {
     console.log("Buy Now:", product);
+    router.push(`/checkout?productId=${product._id}`);
     // TODO: Redirect to checkout or Buy Now page
   };
 
