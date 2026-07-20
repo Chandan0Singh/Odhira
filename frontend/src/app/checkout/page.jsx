@@ -1,63 +1,89 @@
 "use client";
 
-import { CreditCard, Truck, ShieldCheck } from "lucide-react";
+import { CreditCard, Truck, ShieldCheck, Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-const cartItems = [
-  {
-    id: 1,
-    name: "Silk Embroidered Kurta",
-    size: "M",
-    qty: 1,
-    price: 3499,
-    image:
-      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=500",
-  },
-  {
-    id: 2,
-    name: "Premium Dupatta",
-    size: "Free Size",
-    qty: 1,
-    price: 1499,
-    image:
-      "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=500",
-  },
-];
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function CheckoutPage() {
   const searchParams = useSearchParams();
 
   const productId = searchParams.get("productId");
-  const subtotal = cartItems.reduce(
-    (acc, item) => acc + item.price * item.qty,
-    0
-  );
+  const qty = Number(searchParams.get("qty")) || 1;
+  const size = searchParams.get("size") || "Free Size";
 
-  const fetchData = async() =>{
-    try{
-      const response = await fetch(`http://localhost:5000/api/products/${productId}`);
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-      const data = await response.json();
-
-      if(!response){
-        throw new Error("Failed to fetch product");
-      }
-
-      console.log("Da :",data)
-
-    }catch(error){
-      console.log("error : ", error)
+  useEffect(() => {
+    if (!productId) {
+      setError("No product selected");
+      setLoading(false);
+      return;
     }
 
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch(`${API_BASE}/api/products/${productId}`);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch product (${response.status})`);
+        }
+
+        const data = await response.json();
+
+        if (!data.success || !data) {
+          throw new Error("Product not found");
+        }
+
+        setProduct(data);
+      } catch (err) {
+        console.error("Checkout fetch error:", err.message);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [productId]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F8F5EE] flex items-center justify-center">
+        <Loader2 className="animate-spin text-[#5E6B58]" size={32} />
+      </div>
+    );
   }
 
-  useEffect(()=>{
-    fetchData();
-  }, [])
+  // Error / no product state
+  if (error || !product) {
+    return (
+      <div className="min-h-screen bg-[#F8F5EE] flex items-center justify-center px-6">
+        <div className="text-center">
+          <p className="text-lg text-[#5E6B58] font-medium mb-2">
+            {error || "Something went wrong"}
+          </p>
+          <p className="text-sm text-gray-500">
+            Please go back and select a product to checkout.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
+  const unitPrice = product.discountedPrice || product.price;
+  const subtotal = unitPrice * qty;
   const shipping = 0;
   const total = subtotal + shipping;
+  const productImage =
+    product.images?.[0]?.url || product.images?.[0] || "/placeholder.png";
 
   return (
     <div className="min-h-screen bg-[#F8F5EE]">
@@ -70,9 +96,7 @@ export default function CheckoutPage() {
 
           <h1
             className="text-4xl md:text-5xl mt-3"
-            style={{
-              fontFamily: "'Playfair Display', serif",
-            }}
+            style={{ fontFamily: "'Playfair Display', serif" }}
           >
             Checkout
           </h1>
@@ -95,19 +119,16 @@ export default function CheckoutPage() {
                   placeholder="First Name"
                   className="border border-[#D8D2C8] p-3 outline-none focus:border-[#5E6B58]"
                 />
-
                 <input
                   type="text"
                   placeholder="Last Name"
                   className="border border-[#D8D2C8] p-3 outline-none focus:border-[#5E6B58]"
                 />
-
                 <input
                   type="email"
                   placeholder="Email Address"
                   className="border border-[#D8D2C8] p-3 outline-none focus:border-[#5E6B58] md:col-span-2"
                 />
-
                 <input
                   type="text"
                   placeholder="Phone Number"
@@ -127,22 +148,18 @@ export default function CheckoutPage() {
                   placeholder="Address Line 1"
                   className="border border-[#D8D2C8] p-3 md:col-span-2"
                 />
-
                 <input
                   placeholder="City"
                   className="border border-[#D8D2C8] p-3"
                 />
-
                 <input
                   placeholder="State"
                   className="border border-[#D8D2C8] p-3"
                 />
-
                 <input
                   placeholder="Postal Code"
                   className="border border-[#D8D2C8] p-3"
                 />
-
                 <input
                   placeholder="Country"
                   className="border border-[#D8D2C8] p-3"
@@ -181,44 +198,29 @@ export default function CheckoutPage() {
             <div className="bg-white border border-[#E4E0D8] p-6 sticky top-24">
               <h2
                 className="text-2xl mb-6"
-                style={{
-                  fontFamily: "'Playfair Display', serif",
-                }}
+                style={{ fontFamily: "'Playfair Display', serif" }}
               >
                 Order Summary
               </h2>
 
               <div className="space-y-5">
-                {cartItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex gap-4 border-b border-[#EEE] pb-4"
-                  >
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-20 h-24 object-cover"
-                    />
+                <div className="flex gap-4 border-b border-[#EEE] pb-4">
+                  <img
+                    src={productImage}
+                    alt={product.title}
+                    className="w-20 h-24 object-cover"
+                  />
 
-                    <div className="flex-1">
-                      <h3 className="font-medium">
-                        {item.name}
-                      </h3>
-
-                      <p className="text-sm text-gray-500 mt-1">
-                        Size: {item.size}
-                      </p>
-
-                      <p className="text-sm text-gray-500">
-                        Qty: {item.qty}
-                      </p>
-                    </div>
-
-                    <span className="font-semibold">
-                      ₹{item.price}
-                    </span>
+                  <div className="flex-1">
+                    <h3 className="font-medium">{product.title}</h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Size: {size}
+                    </p>
+                    <p className="text-sm text-gray-500">Qty: {qty}</p>
                   </div>
-                ))}
+
+                  <span className="font-semibold">₹{unitPrice}</span>
+                </div>
               </div>
 
               <div className="space-y-3 mt-6 border-t pt-5">
