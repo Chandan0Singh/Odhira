@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Product = require("../models/Product");
 require("../models/Category");
 require("../models/Collection");
@@ -114,13 +115,36 @@ const getProductBySlug = async (req, res) => {
 // ─── GET PRODUCT BY ID ────────────────────────────────────────────────────────
 const getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id)
-      .populate("category", "name slug")
-      .populate("collection", "name slug");
 
-    if (!product) return res.status(404).json({ message: "Product not found" });
-    res.json(product);
+    const { id } = req.params;
+
+    // Validate MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product ID",
+      });
+    }
+
+    const product = await Product.findById(id)
+      .populate("category", "name slug")
+      .populate("collection", "name slug")
+      .lean();
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: product,
+    });
   } catch (err) {
+
+    console.log("error :", err)
     res.status(500).json({ message: "Server Error", error: err.message });
   }
 };

@@ -1,6 +1,8 @@
 "use client";
 
 import { CreditCard, Truck, ShieldCheck } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
 const cartItems = [
   {
@@ -24,10 +26,35 @@ const cartItems = [
 ];
 
 export default function CheckoutPage() {
+  const searchParams = useSearchParams();
+
+  const productId = searchParams.get("productId");
   const subtotal = cartItems.reduce(
     (acc, item) => acc + item.price * item.qty,
     0
   );
+
+  const fetchData = async() =>{
+    try{
+      const response = await fetch(`http://localhost:5000/api/products/${productId}`);
+
+      const data = await response.json();
+
+      if(!response){
+        throw new Error("Failed to fetch product");
+      }
+
+      console.log("Da :",data)
+
+    }catch(error){
+      console.log("error : ", error)
+    }
+
+  }
+
+  useEffect(()=>{
+    fetchData();
+  }, [])
 
   const shipping = 0;
   const total = subtotal + shipping;
