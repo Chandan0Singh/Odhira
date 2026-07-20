@@ -41,7 +41,7 @@ export default function CheckoutPage() {
           throw new Error("Product not found");
         }
 
-        setProduct(data);
+        setProduct(data.data);
       } catch (err) {
         console.error("Checkout fetch error:", err.message);
         setError(err.message);
@@ -52,6 +52,8 @@ export default function CheckoutPage() {
 
     fetchData();
   }, [productId]);
+
+  console.log("product", product)
 
   // Loading state
   if (loading) {
