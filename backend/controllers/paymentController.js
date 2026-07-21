@@ -6,7 +6,6 @@ const { options } = require("../routes/auth");
 
 const createRazorpayOrder = async (req, res)=>{
   try{
-     console.log(req.body); 
     const {amount} = req.body;
 
     const option = {
@@ -23,8 +22,6 @@ const createRazorpayOrder = async (req, res)=>{
     });
 
   } catch (error){
-
-    console.log("error : ", error)
     return res.status(500).json({
       success: false,
       message: error.message

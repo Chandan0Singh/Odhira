@@ -179,6 +179,7 @@ export default function CheckoutPage() {
       body: JSON.stringify({ amount: total }),
     });
 
+
     const razorpayOrderData = await razorpayOrderRes.json();
 
     if (!razorpayOrderData.success) {
