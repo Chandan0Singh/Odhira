@@ -5,8 +5,10 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import CheckoutModal from "../Components/CheckoutModal";
+import { useRouter } from "next/navigation";
 
 export default function CartPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +16,7 @@ export default function CartPage() {
   const [userAddresses, setUserAddresses] = useState([]);
   const [cartId, setCartId] = useState(null);
 
-  console.log("User in CartPage:", user); // Debugging line
+  console.log("cartItems : ", cartItems)
 
   useEffect(() => {
     if (user?.id) {
@@ -102,8 +104,9 @@ export default function CartPage() {
   };
 
   const handleCheckout = () => {
-    setShowCheckoutModal(true);
-    fetchUserData();
+    // setShowCheckoutModal(true);
+    // fetchUserData();
+    router.push(`/checkout?from=cart`);
   };
 
   const clearCart = async () => {

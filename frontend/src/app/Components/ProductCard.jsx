@@ -36,7 +36,6 @@ export default function ProductCard({ product }) {
   };
 
   const handleBuyNow = () => {
-    console.log("Buy Now:", product);
     router.push(`/checkout?productId=${product._id}`);
     // TODO: Redirect to checkout or Buy Now page
   };
