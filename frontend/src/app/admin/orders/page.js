@@ -2,6 +2,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+
 export default function OrdersDashboard() {
   const [orders, setOrders] = useState([]);
   const [paymentStatus, setPaymentStatus] = useState("");
@@ -10,7 +12,7 @@ export default function OrdersDashboard() {
 
   useEffect(() => {
     const getBlogs = async () => {
-      const response = await axios.get("http://localhost:5000/api/order/all");
+      const response = await axios.get(`${API_BASE}/api/order/all`);
       setOrders(response.data.data);
     };
 
@@ -20,19 +22,16 @@ export default function OrdersDashboard() {
   useEffect(() => {
     const getFilteredBlogs = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/order/filter",
-          {
-            params: {
-              search: search || "",
-              deliveryStatus:
-                deliveryStatus === "All Status" ? "" : deliveryStatus,
+        const response = await axios.get(`${API_BASE}/api/order/filter`, {
+          params: {
+            search: search || "",
+            deliveryStatus:
+              deliveryStatus === "All Status" ? "" : deliveryStatus,
 
-              paymentStatus:
-                paymentStatus === "Payment Status" ? "" : paymentStatus,
-            },
+            paymentStatus:
+              paymentStatus === "Payment Status" ? "" : paymentStatus,
           },
-        );
+        });
 
         setOrders(response.data.data);
       } catch (error) {
@@ -43,8 +42,12 @@ export default function OrdersDashboard() {
     getFilteredBlogs();
   }, [paymentStatus, deliveryStatus, search]);
 
-  const delivered = orders.filter((order)=>order.orderStatus === "Delivered").length
-  const pending = orders.filter((order)=>order.orderStatus === "Placed").length
+  const delivered = orders.filter(
+    (order) => order.orderStatus === "Delivered",
+  ).length;
+  const pending = orders.filter(
+    (order) => order.orderStatus === "Placed",
+  ).length;
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">

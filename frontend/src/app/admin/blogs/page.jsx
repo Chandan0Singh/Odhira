@@ -12,6 +12,8 @@ const EMPTY_DOC = `
   <p>Add headings, paragraphs, images and lists.</p>
 `;
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+
 export default function BlogsDashboard() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
@@ -51,11 +53,10 @@ export default function BlogsDashboard() {
     setFeaturedImage("");
     editor?.commands.setContent(EMPTY_DOC);
   };
-
   // ─── FETCH ALL BLOGS (used on load and after create/delete) ───────
   const getAllBlogs = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/blog");
+      const response = await axios.get(`${API_BASE}/api/blog`);
 
       setBlogs(response.data.data);
       setBlogCount(response.data.count);
@@ -88,7 +89,7 @@ export default function BlogsDashboard() {
 
     setSaving(true);
     try {
-      await axios.post("http://localhost:5000/api/blog/create", {
+      await axios.post(`${API_BASE}/api/blog/create`, {
         title,
         category,
         description,
@@ -120,7 +121,7 @@ export default function BlogsDashboard() {
     if (!value) return;
 
     try {
-      await axios.delete("http://localhost:5000/api/blog/delete", {
+      await axios.delete(`${API_BASE}/api/blog/delete`, {
         data: {
           blogid: selectedBlogId,
         },
@@ -136,16 +137,13 @@ export default function BlogsDashboard() {
 
   const filtersearch = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/blog/search",
-        {
-          params: {
-            search: searchTerm,
-            category: searchCategory,
-            status: searchStatus,
-          },
+      const response = await axios.get(`${API_BASE}/api/blog/search`, {
+        params: {
+          search: searchTerm,
+          category: searchCategory,
+          status: searchStatus,
         },
-      );
+      });
 
       setBlogs(response.data.data);
     } catch (error) {

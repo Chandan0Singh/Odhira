@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 export default function CheckoutContext() {
   const { user, loading: authLoading } = useAuth();
@@ -209,7 +209,7 @@ export default function CheckoutContext() {
 
   const clearCart = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/cart/clear", {
+      const response = await fetch(`${API_BASE}/api/cart/clear`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

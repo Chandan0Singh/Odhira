@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
 
-const API = "http://localhost:5000/api";
+const API = `${proccess}/api`;
 
 const emptyVariant = {
   sku: "",

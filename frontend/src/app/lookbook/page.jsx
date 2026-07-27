@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+
 export default function LookbookPage() {
   const [looks, setLooks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchLookbook = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/lookbook");
+      const response = await fetch(`${API_BASE}/api/lookbook`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch lookbook");
@@ -101,7 +103,7 @@ export default function LookbookPage() {
             >
               <div className="overflow-hidden">
                 <img
-                  src={`http://localhost:5000${look.image}`}
+                  src={`${API_BASE}${look.image}`}
                   alt={look.title}
                   className="w-full object-cover group-hover:scale-105 transition duration-700"
                 />

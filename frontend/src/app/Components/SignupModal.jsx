@@ -7,6 +7,8 @@ import { useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+
 export default function SignupModal({ isOpen, onClose, openLogin }) {
   const { login } = useAuth();
   const router = useRouter();
@@ -28,7 +30,7 @@ export default function SignupModal({ isOpen, onClose, openLogin }) {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
+      const res = await fetch(`${API_BASE}/api/auth/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,7 +45,7 @@ export default function SignupModal({ isOpen, onClose, openLogin }) {
         login(data);
 
         setTimeout(() => {
-           onClose();
+          onClose();
           router.push("/");
         }, 1500);
       } else {
@@ -85,10 +87,8 @@ export default function SignupModal({ isOpen, onClose, openLogin }) {
           </button>
 
           {message && (
-  <p className="text-center text-sm font-medium">
-    {message}
-  </p>
-)}
+            <p className="text-center text-sm font-medium">{message}</p>
+          )}
 
           {/* Heading */}
           <div className="text-center mb-8">

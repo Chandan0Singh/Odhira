@@ -4,6 +4,8 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+
 export default function EditBlogPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -23,9 +25,7 @@ export default function EditBlogPage() {
 
   const fetchBlog = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/api/blog/${id}`
-      );
+      const response = await axios.get(`${API_BASE}/api/blog/${id}`);
 
       setBlogData(response.data.data);
     } catch (error) {
@@ -56,10 +56,7 @@ export default function EditBlogPage() {
     try {
       setLoading(true);
 
-      await axios.put(
-        `http://localhost:5000/api/blog/update/${id}`,
-        blogData
-      );
+      await axios.put(`${API_BASE}/api/blog/update/${id}`, blogData);
 
       alert("Blog updated successfully");
 
@@ -75,19 +72,13 @@ export default function EditBlogPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-4xl mx-auto bg-white p-8 rounded-3xl shadow-sm border">
-
-        <h1 className="text-3xl font-bold mb-8">
-          Edit Blog
-        </h1>
+        <h1 className="text-3xl font-bold mb-8">Edit Blog</h1>
 
         <form onSubmit={updateBlog} className="space-y-6">
-
           {/* TITLE */}
 
           <div>
-            <label className="block mb-2 font-medium">
-              Blog Title
-            </label>
+            <label className="block mb-2 font-medium">Blog Title</label>
 
             <input
               type="text"
@@ -102,9 +93,7 @@ export default function EditBlogPage() {
           {/* DESCRIPTION */}
 
           <div>
-            <label className="block mb-2 font-medium">
-              Description
-            </label>
+            <label className="block mb-2 font-medium">Description</label>
 
             <textarea
               name="description"
@@ -119,9 +108,7 @@ export default function EditBlogPage() {
           {/* CATEGORY */}
 
           <div>
-            <label className="block mb-2 font-medium">
-              Category
-            </label>
+            <label className="block mb-2 font-medium">Category</label>
 
             <select
               name="category"
@@ -139,9 +126,7 @@ export default function EditBlogPage() {
           {/* CONTENT */}
 
           <div>
-            <label className="block mb-2 font-medium">
-              Content
-            </label>
+            <label className="block mb-2 font-medium">Content</label>
 
             <textarea
               name="content"
@@ -156,9 +141,7 @@ export default function EditBlogPage() {
           {/* FEATURED IMAGE */}
 
           <div>
-            <label className="block mb-2 font-medium">
-              Featured Image URL
-            </label>
+            <label className="block mb-2 font-medium">Featured Image URL</label>
 
             <input
               type="text"
@@ -173,9 +156,7 @@ export default function EditBlogPage() {
           {/* STATUS */}
 
           <div>
-            <label className="block mb-2 font-medium">
-              Status
-            </label>
+            <label className="block mb-2 font-medium">Status</label>
 
             <select
               name="status"
@@ -191,7 +172,6 @@ export default function EditBlogPage() {
           {/* BUTTONS */}
 
           <div className="flex gap-4 pt-4">
-
             <button
               type="submit"
               disabled={loading}
@@ -207,9 +187,7 @@ export default function EditBlogPage() {
             >
               Cancel
             </button>
-
           </div>
-
         </form>
       </div>
     </div>

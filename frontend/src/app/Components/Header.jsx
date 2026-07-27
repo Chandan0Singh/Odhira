@@ -7,6 +7,8 @@ import SignupModal from "./SignupModal";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
 
+
+
 export default function Header() {
   const { user, logout, isAuthenticated } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -21,7 +23,7 @@ export default function Header() {
 
   const fetchCollections = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/collections");
+      const res = await axios.get(`${API_BASE}/api/collections`);
 
       setCollections(res.data);
     } catch (error) {

@@ -1,12 +1,11 @@
-
 import { use } from "react";
 import CollectionPage from "@/app/Components/CollectionPage";
 
-export default function collectionSlugPage({ params }) {
-     const { slug } = use(params);
-    console.log("Params received:", slug); // Debugging line
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
-  return (
-    <CollectionPage apiUrl={`http://localhost:5000/api/collections/page/${slug}`} />
-  );
+export default function collectionSlugPage({ params }) {
+  const { slug } = use(params);
+  console.log("Params received:", slug); // Debugging line
+
+  return <CollectionPage apiUrl={`${API_BASE}/api/collections/page/${slug}`} />;
 }

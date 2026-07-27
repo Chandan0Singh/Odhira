@@ -7,6 +7,8 @@ import { useAuth } from "@/context/AuthContext";
 import CheckoutModal from "../Components/CheckoutModal";
 import { useRouter } from "next/navigation";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+
 export default function CartPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -16,7 +18,7 @@ export default function CartPage() {
   const [userAddresses, setUserAddresses] = useState([]);
   const [cartId, setCartId] = useState(null);
 
-  console.log("cartItems : ", cartItems)
+  console.log("cartItems : ", cartItems);
 
   useEffect(() => {
     if (user?.id) {
@@ -26,7 +28,7 @@ export default function CartPage() {
 
   const fetchCart = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/cart/${user.id}`);
+      const res = await axios.get(`${API_BASE}/api/cart/${user.id}`);
       setCartId(res.data._id); // Store the cart ID for later use
 
       setCartItems(res.data.items);
@@ -58,7 +60,7 @@ export default function CartPage() {
 
   const removeItem = async (cartItemId) => {
     try {
-      await axios.delete("http://localhost:5000/api/cart/remove", {
+      await axios.delete(`${API_BASE}/api/cart/remove`, {
         data: {
           userId: user.id,
           cartItemId,
@@ -90,9 +92,7 @@ export default function CartPage() {
   }
 
   const fetchUserData = async () => {
-    const response = await fetch(
-      `http://localhost:5000/api/user/${user.id}/addresses`,
-    );
+    const response = await fetch(`${API_BASE}/api/user/${user.id}/addresses`);
 
     if (!response.ok) {
       throw new Error("Failed to fetch user data");
@@ -111,7 +111,7 @@ export default function CartPage() {
 
   const clearCart = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/cart/clear", {
+      const response = await fetch(`${API_BASE}/api/cart/clear`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -153,7 +153,7 @@ export default function CartPage() {
         })),
       };
 
-      const response = await fetch("http://localhost:5000/api/order/create", {
+      const response = await fetch(`${API_BASE}/api/order/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

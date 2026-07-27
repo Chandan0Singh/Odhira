@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { MapPin, Plus, Pencil, Trash2, X, Loader2, Star } from "lucide-react";
 import { useAuth } from "@/context/AuthContext"; // adjust path if your context lives elsewhere
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 const EMPTY_FORM = {
   type: "Home",
@@ -118,18 +118,15 @@ export default function AddressesPage() {
 
     try {
       const isEditing = !!editingId;
-      const res = await fetch(
-        `${API_BASE}/api/user/address`,
-        {
-          method: isEditing ? "PUT" : "POST",
-          headers: authHeaders,
-          body: JSON.stringify({
-            userId,
-            ...(isEditing ? { addressId: editingId } : {}),
-            ...form,
-          }),
-        },
-      );
+      const res = await fetch(`${API_BASE}/api/user/address`, {
+        method: isEditing ? "PUT" : "POST",
+        headers: authHeaders,
+        body: JSON.stringify({
+          userId,
+          ...(isEditing ? { addressId: editingId } : {}),
+          ...form,
+        }),
+      });
 
       const data = await res.json();
 
@@ -268,9 +265,7 @@ export default function AddressesPage() {
                   </h3>
                 </div>
 
-                <p className="font-medium text-[#2D2D2D]">
-                  {address.fullName}
-                </p>
+                <p className="font-medium text-[#2D2D2D]">{address.fullName}</p>
 
                 <p className="text-[#777] mt-2">{address.phone}</p>
 

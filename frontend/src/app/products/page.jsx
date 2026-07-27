@@ -5,7 +5,7 @@ import Link from "next/link";
 import axios from "axios";
 import { Search, SlidersHorizontal, X, ChevronDown } from "lucide-react";
 
-const API = "http://localhost:5000/api";
+const API = `${process.env.NEXT_PUBLIC_API_URL}/api;
 
 const SORT_OPTIONS = [
   { label: "Newest First",   value: "newest" },

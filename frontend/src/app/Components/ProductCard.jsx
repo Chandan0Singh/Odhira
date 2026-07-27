@@ -6,6 +6,8 @@ import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+
 export default function ProductCard({ product }) {
   const router = useRouter();
 
@@ -20,7 +22,7 @@ export default function ProductCard({ product }) {
         return;
       }
 
-      const res = await axios.post("http://localhost:5000/api/cart/add", {
+      const res = await axios.post(`${API_BASE}/api/cart/add`, {
         userId: user.id,
         productId: product._id,
         quantity: 1,

@@ -14,7 +14,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-const API = "http://localhost:5000/api/products";
+const API = `${process.env.NEXT_PUBLIC_API_URL}/api/products`;
 
 export default function AdminProductsDashboard() {
   const [products, setProducts] = useState([]);

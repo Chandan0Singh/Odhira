@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Plus, Trash2, PackagePlus, ChevronDown } from "lucide-react";
 
-const API = "http://localhost:5000/api";
+const API = `${process.env.NEXT_PUBLIC_API_URL}/api`;
 
 const SIZES     = ["XS", "S", "M", "L", "XL", "XXL", "Free Size", "Custom"];
 const OCCASIONS = ["Bridal", "Festive", "Casual", "Party", "Wedding Guest", "Daily Wear"];

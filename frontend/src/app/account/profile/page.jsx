@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { User, Mail, Phone, Calendar, Loader2, Check } from "lucide-react";
 import { useAuth } from "@/context/AuthContext"; // adjust path if your context lives elsewhere
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ProfilePage() {
   const { user, token, login } = useAuth();
@@ -215,9 +215,7 @@ export default function ProfilePage() {
 
               {/* Email */}
               <div>
-                <label className="block text-sm text-[#666] mb-2">
-                  Email
-                </label>
+                <label className="block text-sm text-[#666] mb-2">Email</label>
 
                 <div className="relative">
                   <Mail

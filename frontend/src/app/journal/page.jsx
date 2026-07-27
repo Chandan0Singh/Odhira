@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Clock } from "lucide-react";
 
-const API = "http://localhost:5000/api/blog";
+const API = `${process.env.NEXT_PUBLIC_API_URL}/api/blog`;
 
 export default function JournalPage() {
   const [blogs, setBlogs] = useState([]);

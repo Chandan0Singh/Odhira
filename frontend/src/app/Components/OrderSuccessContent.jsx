@@ -1,10 +1,16 @@
 "use client";
 
-import { CheckCircle2, Loader2, Package, MapPin, CreditCard } from "lucide-react";
+import {
+  CheckCircle2,
+  Loader2,
+  Package,
+  MapPin,
+  CreditCard,
+} from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 export default function OrderSuccessContent() {
   const searchParams = useSearchParams();
@@ -166,9 +172,7 @@ export default function OrderSuccessContent() {
                     </p>
                   )}
                   {item.color && (
-                    <p className="text-sm text-gray-500">
-                      Color: {item.color}
-                    </p>
+                    <p className="text-sm text-gray-500">Color: {item.color}</p>
                   )}
                   <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                 </div>
@@ -186,7 +190,9 @@ export default function OrderSuccessContent() {
             </div>
             <div className="flex justify-between">
               <span>Shipping</span>
-              <span>{order.shippingCharge ? `₹${order.shippingCharge}` : "Free"}</span>
+              <span>
+                {order.shippingCharge ? `₹${order.shippingCharge}` : "Free"}
+              </span>
             </div>
             {order.discount > 0 && (
               <div className="flex justify-between">

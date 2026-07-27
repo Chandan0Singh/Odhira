@@ -7,6 +7,8 @@ import Link from "next/link";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "next/navigation";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+
 export default function LoginModal({ isOpen, onClose, openSignup }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -20,7 +22,7 @@ export default function LoginModal({ isOpen, onClose, openSignup }) {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

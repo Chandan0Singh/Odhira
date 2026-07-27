@@ -4,6 +4,8 @@ import { useEffect, useState, use } from "react";
 import { CalendarDays, Eye, User } from "lucide-react";
 import Link from "next/link";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+
 export default function BlogDetailPage({ params }) {
   const { slug } = use(params);
   const [blog, setBlog] = useState(null);
@@ -15,7 +17,7 @@ export default function BlogDetailPage({ params }) {
 
   const fetchBlog = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/blog/${slug}`);
+      const res = await fetch(`${API_BASE}/api/blog/${slug}`);
 
       const data = await res.json();
 

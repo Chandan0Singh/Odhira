@@ -2,6 +2,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+
 export default function UserDashboard() {
   const [users, setUsers] = useState([]);
   const [searchInput, setSearchInput] = useState("");
@@ -68,10 +70,7 @@ export default function UserDashboard() {
 
     setAdding(true);
     try {
-      const { data } = await axios.post(
-        "http://localhost:5000/api/auth/signup",
-        newUser
-      );
+      const { data } = await axios.post(`${API_BASE}/api/auth/signup`, newUser);
 
       setUsers((prev) => [data.user, ...prev]);
       setTotalUsers((prev) => prev + 1);
@@ -88,15 +87,12 @@ export default function UserDashboard() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const { data } = await axios.get(
-          "http://localhost:5000/api/user/users",
-          {
-            params: {
-              page: currentPage,
-              limit: 10,
-            },
+        const { data } = await axios.get(`${API_BASE}/api/user/users`, {
+          params: {
+            page: currentPage,
+            limit: 10,
           },
-        );
+        });
 
         setUsers(data.users);
         setTotalPages(data.totalPages);
@@ -111,18 +107,15 @@ export default function UserDashboard() {
 
   const fetchSearchUSer = async () => {
     try {
-      const { data } = await axios.get(
-        "http://localhost:5000/api/user/search",
-        {
-          params: {
-            search: searchInput,
-            role: selectedRole,
-            status: selectedStatus,
-            page: currentPage,
-            limit: 10,
-          },
+      const { data } = await axios.get(`${API_BASE}/api/user/search`, {
+        params: {
+          search: searchInput,
+          role: selectedRole,
+          status: selectedStatus,
+          page: currentPage,
+          limit: 10,
         },
-      );
+      });
 
       setUsers(data.users);
       setTotalPages(data.totalPages);
@@ -140,7 +133,7 @@ export default function UserDashboard() {
     const newStatus = currentStatus === "active" ? "blocked" : "active";
 
     try {
-      const { data } = await axios.put("http://localhost:5000/api/user/block", {
+      const { data } = await axios.put(`${API_BASE}/api/user/block`, {
         userId: id,
         status: newStatus,
       });
@@ -157,7 +150,7 @@ export default function UserDashboard() {
 
   const handleChangeRole = async (id, currentRole) => {
     try {
-      const { data } = await axios.put("http://localhost:5000/api/user/role", {
+      const { data } = await axios.put(`${API_BASE}/api/user/role`, {
         userId: id,
         role: currentRole,
       });
@@ -183,14 +176,11 @@ export default function UserDashboard() {
     }
 
     try {
-      const { data } = await axios.delete(
-        "http://localhost:5000/api/user/delete",
-        {
-          data: {
-            userId: id,
-          },
+      const { data } = await axios.delete(`${API_BASE}/api/user/delete`, {
+        data: {
+          userId: id,
         },
-      );
+      });
 
       setUsers((prev) => prev.filter((user) => user._id !== id));
     } catch (error) {
@@ -212,14 +202,11 @@ export default function UserDashboard() {
   // UPDATE USER FUNCTION
   const handleEditUser = async () => {
     try {
-      const { data } = await axios.put(
-        "http://localhost:5000/api/user/update",
-        {
-          userId: editData.userId,
-          name: editData.name,
-          email: editData.email,
-        },
-      );
+      const { data } = await axios.put(`${API_BASE}/api/user/update`, {
+        userId: editData.userId,
+        name: editData.name,
+        email: editData.email,
+      });
       setUsers((prev) =>
         prev.map((user) =>
           user._id === editData.userId
@@ -587,7 +574,9 @@ export default function UserDashboard() {
 
             {/* FIRST NAME */}
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">First Name</label>
+              <label className="block text-sm font-medium mb-2">
+                First Name
+              </label>
 
               <input
                 type="text"
@@ -604,7 +593,9 @@ export default function UserDashboard() {
 
             {/* LAST NAME */}
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">Last Name</label>
+              <label className="block text-sm font-medium mb-2">
+                Last Name
+              </label>
 
               <input
                 type="text"

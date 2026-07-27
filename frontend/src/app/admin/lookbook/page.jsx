@@ -13,7 +13,7 @@ import {
   ImageOff,
 } from "lucide-react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 const IMG_BASE = API_BASE; // images are served as relative paths like /uploads/xyz.jpg
 
 const emptyForm = {
@@ -46,7 +46,7 @@ export default function LookbookAdminPage() {
       setLooks(res.data?.data || []);
     } catch (err) {
       setError(
-        err?.response?.data?.message || "Failed to load lookbook entries."
+        err?.response?.data?.message || "Failed to load lookbook entries.",
       );
     } finally {
       setLoading(false);
@@ -118,7 +118,7 @@ export default function LookbookAdminPage() {
         await axios.put(
           `${API_BASE}/api/lookbook/admin/${editingId}`,
           payload,
-          { headers: { "Content-Type": "multipart/form-data" } }
+          { headers: { "Content-Type": "multipart/form-data" } },
         );
       } else {
         await axios.post(`${API_BASE}/api/lookbook/admin`, payload, {
@@ -129,7 +129,7 @@ export default function LookbookAdminPage() {
       await fetchLooks();
     } catch (err) {
       setFormError(
-        err?.response?.data?.message || "Something went wrong. Try again."
+        err?.response?.data?.message || "Something went wrong. Try again.",
       );
     } finally {
       setSaving(false);
@@ -221,9 +221,7 @@ export default function LookbookAdminPage() {
                     <td className="px-5 py-3 font-medium text-neutral-800">
                       {look.title}
                     </td>
-                    <td className="px-5 py-3 text-neutral-500">
-                      {look.slug}
-                    </td>
+                    <td className="px-5 py-3 text-neutral-500">{look.slug}</td>
                     <td className="px-5 py-3">
                       <span
                         className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${

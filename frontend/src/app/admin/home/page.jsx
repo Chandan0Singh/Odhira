@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 const emptyForm = {
   hero: {
@@ -51,9 +51,7 @@ export default function AdminHomePage() {
             subtitle: data.home.hero?.subtitle || "",
             buttonText: data.home.hero?.buttonText || "",
             buttonLink: data.home.hero?.buttonLink || "",
-            images: data.home.hero?.images?.length
-              ? data.home.hero.images
-              : [],
+            images: data.home.hero?.images?.length ? data.home.hero.images : [],
           },
           brandStory: {
             title: data.home.brandStory?.title || "",
