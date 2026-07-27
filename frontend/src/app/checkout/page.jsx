@@ -1,10 +1,10 @@
-import React from 'react'
-import CheckoutContent from "../Components/CheckoutContent"
+import { Suspense } from "react";
+import CheckoutContent from "../Components/CheckoutContent";
 
-const CheckoutPage = () => {
+export default function CheckoutPage() {
   return (
-      <CheckoutContent/>
-  )
+    <Suspense fallback={<div>Loading...</div>}>
+      <CheckoutContent />
+    </Suspense>
+  );
 }
-
-export default CheckoutPage;
