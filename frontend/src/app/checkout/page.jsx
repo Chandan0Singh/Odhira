@@ -3,12 +3,12 @@
 import { CreditCard, Truck, ShieldCheck, Loader2 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {useAuth} from "@/context/AuthContext"
+import { useAuth } from "@/context/AuthContext";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function CheckoutPage() {
-   const { user } = useAuth();
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -111,7 +111,7 @@ export default function CheckoutPage() {
     });
 
   const buildOrderPayload = (paymentStatus = "Pending") => {
-    const userId = user.id // adjust key to match your auth storage
+    const userId = user.id; // adjust key to match your auth storage
 
     return {
       userId,
@@ -173,17 +173,21 @@ export default function CheckoutPage() {
       throw new Error("Razorpay SDK failed to load. Check your connection.");
     }
 
-    const razorpayOrderRes = await fetch(`${API_BASE}/api/payment/create-order`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: total }),
-    });
-
+    const razorpayOrderRes = await fetch(
+      `${API_BASE}/api/payment/create-order`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: total }),
+      },
+    );
 
     const razorpayOrderData = await razorpayOrderRes.json();
 
     if (!razorpayOrderData.success) {
-      throw new Error(razorpayOrderData.message || "Could not initiate payment");
+      throw new Error(
+        razorpayOrderData.message || "Could not initiate payment",
+      );
     }
 
     const { order: razorpayOrder } = razorpayOrderData;
@@ -196,13 +200,30 @@ export default function CheckoutPage() {
         name: "Odhira",
         description: "Order Payment",
         order_id: razorpayOrder.id,
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: "Pay via UPI",
+                instruments: [{ method: "upi" }],
+              },
+            },
+            sequence: ["block.upi"],
+            preferences: {
+              show_default_blocks: true,
+            },
+          },
+        },
         handler: async (response) => {
           try {
-            const verifyRes = await fetch(`${API_BASE}/api/payment/verify-payment`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(response),
-            });
+            const verifyRes = await fetch(
+              `${API_BASE}/api/payment/verify-payment`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(response),
+              },
+            );
 
             const verifyData = await verifyRes.json();
 
@@ -359,9 +380,7 @@ export default function CheckoutPage() {
 
             {/* Address */}
             <div className="bg-white border border-[#E4E0D8] p-6">
-              <h2 className="text-xl font-semibold mb-5">
-                Shipping Address
-              </h2>
+              <h2 className="text-xl font-semibold mb-5">Shipping Address</h2>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <input
@@ -404,9 +423,7 @@ export default function CheckoutPage() {
 
             {/* Payment */}
             <div className="bg-white border border-[#E4E0D8] p-6">
-              <h2 className="text-xl font-semibold mb-5">
-                Payment Method
-              </h2>
+              <h2 className="text-xl font-semibold mb-5">Payment Method</h2>
 
               <div className="space-y-4">
                 <label className="flex items-center gap-3 border border-[#E4E0D8] p-4 cursor-pointer">
@@ -457,9 +474,7 @@ export default function CheckoutPage() {
 
                   <div className="flex-1">
                     <h3 className="font-medium">{product.title}</h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Size: {size}
-                    </p>
+                    <p className="text-sm text-gray-500 mt-1">Size: {size}</p>
                     <p className="text-sm text-gray-500">Qty: {qty}</p>
                   </div>
 
