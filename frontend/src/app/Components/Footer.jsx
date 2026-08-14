@@ -26,7 +26,6 @@ export default function Footer() {
             <ul className="space-y-3">
               {[
                 { name: "Women", href: "/collections/women" },
-                { name: "Men", href: "/collections/men" },
                 { name: "Accessories", href: "/collections/accessories" },
                 { name: "New Arrivals", href: "/collections/new-arrivals" },
                 { name: "Sale", href: "/collections/sale" },

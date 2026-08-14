@@ -1,5 +1,7 @@
+"use client";
 import Link from "next/link";
 import HeroSlider from "../Components/HeroSlider";
+import { useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -22,8 +24,35 @@ function formatINR(value) {
 }
 
 export default async function Home() {
+  const [email, setEmail] = useState("");
   const { home, categories, newArrivals, bestSellers, lookbook } =
     await getHomeData();
+
+  const handleMailer = async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch(`${API_URL}/api/newsletter`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Subscribed successfully!");
+        setEmail("");
+      } else {
+        alert(data.message);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
+    }
+  };
 
   return (
     <main className="bg-[#F8F5EE]">
@@ -286,10 +315,11 @@ export default async function Home() {
               "Get exclusive access to new arrivals, promotions and fashion inspiration."}
           </p>
 
-          <form className="flex mt-8">
+          <form onSubmit={handleMailer} className="flex mt-8">
             <input
               type="email"
-              name="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               required
               className="flex-1 border border-gray-300 px-4 py-4"

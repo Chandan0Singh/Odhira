@@ -12,7 +12,8 @@ const collectionRoutes = require("./routes/collectionRoutes");
 const categoriesRoutes = require("./routes/categoriesRoutes");
 const lookbookRoutes = require("./routes/lookbookRoutes");
 const homeRoutes = require("./routes/homeRoutes");
-const paymentRoutes = require("./routes/paymentRoutes")
+const paymentRoutes = require("./routes/paymentRoutes");
+const newsletterRoutes = require("./routes/newsletterRoutes");
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use("/api/blog", blog);
 app.use("/api/order", order);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/home", homeRoutes);
+app.use("/api/newsletter", newsletterRoutes);
 
 app.get('/', (req, res) => {
   res.send('API running...');
