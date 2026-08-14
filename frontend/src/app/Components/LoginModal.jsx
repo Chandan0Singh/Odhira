@@ -148,7 +148,7 @@ export default function LoginModal({ isOpen, onClose, openSignup }) {
             </button>
           </form>
 
-          <div className="my-5 flex items-center">
+          {/* <div className="my-5 flex items-center">
             <div className="h-px flex-1 bg-gray-200" />
             <span className="px-3 text-xs text-gray-400">OR</span>
             <div className="h-px flex-1 bg-gray-200" />
@@ -166,7 +166,7 @@ export default function LoginModal({ isOpen, onClose, openSignup }) {
             "
           >
             Continue with Google
-          </button>
+          </button> */}
 
           <p className="text-center mt-6 text-sm">
             New Customer?{" "}

@@ -181,16 +181,15 @@ export default function SignupModal({ isOpen, onClose, openLogin }) {
           </form>
 
           {/* Divider */}
-          <div className="my-5 flex items-center">
+          {/* <div className="my-5 flex items-center">
             <div className="flex-1 h-px bg-gray-200" />
             <span className="px-3 text-xs text-gray-400">OR</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
-          {/* Google */}
           <button className="w-full border border-[#D8D4CB] py-3 rounded-lg hover:bg-[#F8F5EE] transition">
             Continue with Google
-          </button>
+          </button> */}
 
           {/* Login Link */}
           <p className="text-center mt-6 text-sm text-gray-600">
