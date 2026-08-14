@@ -17,7 +17,6 @@ export default function Footer() {
       {/* ── Main Grid ─────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-8 pt-16 pb-10">
         <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1.4fr_1fr_1fr] gap-10 items-start">
-
           {/* SHOP */}
           <div>
             <h4 className="text-[10px] uppercase tracking-[3px] font-semibold text-[#F8F5EE] mb-5">
@@ -82,7 +81,7 @@ export default function Footer() {
                 fontWeight: 500,
               }}
             >
-              Your Brand
+              Odhira
             </h3>
 
             <p className="text-[10px] tracking-[2.5px] uppercase text-[#A8B2A1] mb-6">
@@ -182,7 +181,7 @@ export default function Footer() {
       <div className="border-t border-[#A8B2A1]/25">
         <div className="max-w-7xl mx-auto px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-[11px] text-[#A8B2A1]">
-            © 2026 Your Brand. All Rights Reserved.
+            © 2026 Odhira. All Rights Reserved.
           </p>
 
           <div className="flex gap-6">

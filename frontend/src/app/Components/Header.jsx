@@ -94,7 +94,7 @@ export default function Header() {
                   className="block font-serif text-[28px] leading-none tracking-[6px] text-[#5E6B58] uppercase"
                   style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                 >
-                  Your Brand
+                  Odhira
                 </span>
                 <span className="block w-16 h-px bg-[#A8B2A1] mx-auto mt-1" />
               </a>
@@ -111,7 +111,6 @@ export default function Header() {
                   >
                     <Search size={18} strokeWidth={1.5} />
                   </button>
-
 
                   <div className="relative group">
                     <Link
