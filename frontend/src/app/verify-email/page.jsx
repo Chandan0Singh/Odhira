@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 
@@ -9,6 +9,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const verificationStarted = useRef(false);
 
   const { login } = useAuth();
 
@@ -16,6 +17,10 @@ function VerifyEmailContent() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+      if (verificationStarted.current) return;
+
+  verificationStarted.current = true;
+  
     const token = searchParams.get("token");
 
     if (!token) {
@@ -52,6 +57,7 @@ function VerifyEmailContent() {
         setMessage(
           error.message || "Something went wrong while verifying your email."
         );
+
       }
     };
 
