@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
+const crypto = require("crypto");
+const { sendVerificationEmail } = require("../services/emailService");
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
@@ -154,6 +156,10 @@ const signupUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+
+    const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
     const newUser = await User.create({
       firstName,
       lastName,
@@ -163,34 +169,47 @@ const signupUser = async (req, res) => {
       password: hashedPassword,
       role,
       status: "active",
+
+      isVerified: false,
+      verificationToken,
+      verificationTokenExpires,
     });
 
+    const verificationUrl =
+  `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+
+  await sendVerificationEmail(
+  newUser.email,
+  newUser.name,
+  verificationUrl
+);
+
     // Generate JWT Token
-    const token = jwt.sign(
-      {
-        id: newUser._id,
-        role: newUser.role,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      },
-    );
+    // const token = jwt.sign(
+    //   {
+    //     id: newUser._id,
+    //     role: newUser.role,
+    //   },
+    //   process.env.JWT_SECRET,
+    //   {
+    //     expiresIn: "7d",
+    //   },
+    // );
 
     return res.status(201).json({
       success: true,
-      message: "User registered successfully",
-      token,
-      user: {
-        _id: newUser._id,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        name: newUser.name,
-        email: newUser.email,
-        phone: newUser.phone,
-        role: newUser.role,
-        status: newUser.status,
-      },
+      message: "Account created successfully. Please check your email to verify your account.",
+      // token,
+      // user: {
+      //   _id: newUser._id,
+      //   firstName: newUser.firstName,
+      //   lastName: newUser.lastName,
+      //   name: newUser.name,
+      //   email: newUser.email,
+      //   phone: newUser.phone,
+      //   role: newUser.role,
+      //   status: newUser.status,
+      // },
     });
   } catch (err) {
     console.error("SIGNUP ERROR:", err);
@@ -198,6 +217,94 @@ const signupUser = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Signup failed",
+      error: err.message,
+    });
+  }
+};
+
+const verifyEmail = async (req, res) => {
+  const { token } = req.query;
+
+  try {
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: "Verification token is required",
+      });
+    }
+
+    const user = await User.findOne({
+      verificationToken: token,
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired verification link",
+      });
+    }
+
+    // Check token expiry
+    if (
+      !user.verificationTokenExpires ||
+      user.verificationTokenExpires < new Date()
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Verification link has expired",
+      });
+    }
+
+    // Already verified
+    if (user.isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is already verified",
+      });
+    }
+
+    // Mark email as verified
+    user.isVerified = true;
+
+    // Remove verification token after successful verification
+    user.verificationToken = null;
+    user.verificationTokenExpires = null;
+
+    await user.save();
+
+    // Generate JWT after successful verification
+    const authToken = jwt.sign(
+      {
+        id: user._id,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Email verified successfully",
+      token: authToken,
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        status: user.status,
+      },
+    });
+  } catch (err) {
+    console.error("VERIFY EMAIL ERROR:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Email verification failed",
       error: err.message,
     });
   }
@@ -712,6 +819,7 @@ const setDefaultAddress = async (req, res) => {
 /* ---------------- EXPORTS ---------------- */
 module.exports = {
   signupUser,
+  verifyEmail,
   getAllUsers,
   getUserById,
   changeUserRole,

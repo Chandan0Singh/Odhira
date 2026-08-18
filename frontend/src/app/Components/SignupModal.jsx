@@ -4,15 +4,10 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
-import { useAuth } from "../../context/AuthContext";
-import { useRouter } from "next/navigation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 export default function SignupModal({ isOpen, onClose, openLogin }) {
-  const { login } = useAuth();
-  const router = useRouter();
-
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -40,16 +35,28 @@ export default function SignupModal({ isOpen, onClose, openLogin }) {
 
       const data = await res.json();
 
+      // if (res.ok) {
+      //   setMessage("✅ User Registered Successfully!");
+      //   login(data);
+
+      //   setTimeout(() => {
+      //     onClose();
+      //     router.push("/");
+      //   }, 1500);
+      // } else {
+      //   setMessage(`❌ Error: ${data.message || "Registration failed"}`);
+      // }
+
       if (res.ok) {
-        setMessage("✅ User Registered Successfully!");
-        login(data);
+        setMessage(
+          "✅ Account created! Please check your email and verify your account.",
+        );
 
         setTimeout(() => {
           onClose();
-          router.push("/");
-        }, 1500);
+        }, 3000);
       } else {
-        setMessage(`❌ Error: ${data.message || "Registration failed"}`);
+        setMessage(`❌ ${data.message || "Registration failed"}`);
       }
     } catch (error) {
       console.error("Signup error:", error);
