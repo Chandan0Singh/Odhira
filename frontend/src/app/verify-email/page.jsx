@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -33,9 +33,7 @@ export default function VerifyEmailPage() {
         const data = await res.json();
 
         if (!res.ok) {
-          throw new Error(
-            data.message || "Email verification failed"
-          );
+          throw new Error(data.message || "Email verification failed");
         }
 
         // Login user after successful verification
@@ -47,7 +45,6 @@ export default function VerifyEmailPage() {
         setTimeout(() => {
           router.push("/");
         }, 1500);
-
       } catch (error) {
         console.error("Email verification error:", error);
 
@@ -133,5 +130,21 @@ export default function VerifyEmailPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#F8F5EE]">
+          <div className="text-[#5E6B58] text-lg">
+            Loading...
+          </div>
+        </div>
+      }
+    >
+      <VerifyEmailContent />
+    </Suspense>
   );
 }
