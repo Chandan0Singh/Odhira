@@ -30,7 +30,7 @@ export default function Header() {
 
   const fetchCollections = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/collections`);
+      const res = await axios.get(`${API_BASE}/api/collections/names`);
 
       setCollections(res.data);
     } catch (error) {
@@ -59,7 +59,7 @@ export default function Header() {
         { label: "Profile", href: "/account/profile" },
         { label: "Orders", href: "/account/orders" },
         { label: "Addresses", href: "/account/addresses" },
-        { label: "Wishlist", href: "/wishlist" },
+        // { label: "Wishlist", href: "/wishlist" },
       ],
     },
 
@@ -186,12 +186,12 @@ export default function Header() {
                         Orders
                       </Link>
 
-                      <Link
+                      {/* <Link
                         href="/wishlist"
                         className="block px-4 py-3 text-sm hover:bg-[#F8F5EE]"
                       >
                         Wishlist
-                      </Link>
+                      </Link> */}
 
                       <button
                         onClick={logout}

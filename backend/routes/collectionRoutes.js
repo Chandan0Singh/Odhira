@@ -27,6 +27,7 @@ const {
   createCollection,
   updateCollection,
   deleteCollection,
+  getAllCollectionsname,
 } = require("../controllers/collectionController");
 const { protect, adminOnly } = require("../middleware/authMiddleware");
 
@@ -50,6 +51,7 @@ router.get("/trending",        getTrendingPage);
 router.get("/featured", getFeaturedPage);
 
 // PUBLIC
+router.get("/names",              getAllCollectionsname);
 router.get("/",              getAllCollections);
 router.get("/slug/:slug",    getCollectionBySlug);
 router.get("/page/:slug", getCollectionProductsBySlug);

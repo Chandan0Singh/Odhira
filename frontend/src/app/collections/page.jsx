@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 // Static hero images mapped by collection slug (fallback if no banner)
 const COLLECTION_IMAGES = {
@@ -111,7 +111,7 @@ export default function CollectionsPage() {
         setLoading(true);
         setError(null);
 
-        const res = await fetch(`${API_BASE}/collections`);
+        const res = await fetch(`${API_BASE}/api/collections`);
         if (!res.ok) throw new Error(`Failed to fetch collections (${res.status})`);
 
         const data = await res.json();
@@ -126,7 +126,7 @@ export default function CollectionsPage() {
           active.map(async (col) => {
             try {
               const r = await fetch(
-                `${API_BASE}/products/collection/${col._id}`
+                `${API_BASE}/api/products/collection/${col._id}`
               );
               if (!r.ok) return { id: col._id, count: 0 };
               const products = await r.json();

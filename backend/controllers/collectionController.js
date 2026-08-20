@@ -410,7 +410,7 @@ const getFeaturedPage = (req, res) =>
   );
 
 // GET /api/collections  — all active collections
-const getAllCollections = async (req, res) => {
+const getAllCollectionsname = async (req, res) => {
   try {
     const collections = await Collection.find({ status: "Active" }).sort({
       name: 1,
@@ -418,6 +418,44 @@ const getAllCollections = async (req, res) => {
     res.json(collections);
   } catch (err) {
     res.status(500).json({ message: "Server Error", error: err.message });
+  }
+};
+
+const getAllCollections = async (req, res) => {
+  try {
+    const collections = await Collection.find({
+      status: "Active",
+    }).sort({
+      name: 1,
+    });
+
+    const collectionsWithCount = await Promise.all(
+      collections.map(async (collection) => {
+        const productCount = await Product.countDocuments({
+          collection: collection._id,
+          status: "Active",
+        });
+
+        return {
+          ...collection.toObject(),
+          productCount,
+        };
+      })
+    );
+
+    res.status(200).json({
+      success: true,
+      count: collectionsWithCount.length,
+      collections: collectionsWithCount,
+    });
+  } catch (err) {
+    console.error("Get all collections error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: err.message,
+    });
   }
 };
 
@@ -613,6 +651,7 @@ getCollectionProductsBySlug,
   createCollection,
   updateCollection,
   deleteCollection,
+  getAllCollectionsname,
 };
 
 // ============================================================
