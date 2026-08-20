@@ -276,17 +276,21 @@ export default async function Home() {
       )}
 
       {/* NEWSLETTER */}
-      <section className="py-24 text-center">
-        <div className="max-w-2xl mx-auto px-6">
-          <h2 className="text-5xl font-serif text-[#4B5A43]">
+
+      <section className="py-12 sm:py-16 md:py-20 lg:py-24 text-center px-4">
+        <div className="w-full max-w-2xl mx-auto px-3 sm:px-6">
+          <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-serif text-[#4B5A43] leading-tight break-words">
             {home?.newsletter?.title || "Join Our Community"}
           </h2>
 
-          <p className="mt-6 text-gray-600">
+          <p className="mt-3 sm:mt-4 md:mt-6 text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed max-w-xl mx-auto px-2 sm:px-0">
             {home?.newsletter?.description ||
               "Get exclusive access to new arrivals, promotions and fashion inspiration."}
           </p>
-          <NewsletterForm />
+
+          <div className="mt-5 sm:mt-6 md:mt-8 w-full max-w-md mx-auto px-2 sm:px-0">
+            <NewsletterForm />
+          </div>
         </div>
       </section>
     </main>

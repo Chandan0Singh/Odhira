@@ -5,6 +5,7 @@ import { Search, User, ShoppingBag, X, Menu } from "lucide-react";
 import LoginModal from "./LoginModal";
 import SignupModal from "./SignupModal";
 import { useAuth } from "../../context/AuthContext";
+import Image from "next/image";
 import axios from "axios";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -12,7 +13,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 export default function Header() {
   const { user, logout, isAuthenticated } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  // const [searchOpen, setSearchOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
   const [collections, setCollections] = useState([]);
@@ -87,30 +88,46 @@ export default function Header() {
 
             {/* Logo — always centered on desktop, left-offset on mobile */}
             <div className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 lg:mx-auto">
-              <a href="/" className="block text-center">
-                {/* Ornamental top line */}
-                <span className="block w-16 h-px bg-[#A8B2A1] mx-auto mb-1" />
-                <span
-                  className="block font-serif text-[28px] leading-none tracking-[6px] text-[#5E6B58] uppercase"
-                  style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-                >
-                  Odhira
-                </span>
-                <span className="block w-16 h-px bg-[#A8B2A1] mx-auto mt-1" />
-              </a>
-            </div>
+  <a href="/" className="block text-center">
 
+    {/* Ornamental top line */}
+    <span className="block w-16 h-px bg-[#A8B2A1] mx-auto mb-1" />
+
+    {/* Logo + Name */}
+    <div className="flex items-center justify-center gap-2">
+      <Image
+        src="/logo/ordira logo.jpeg"
+        alt="Odhira Logo"
+        width={45}
+        height={45}
+        className="object-contain"
+        priority
+      />
+
+      <span
+        className="font-serif text-[28px] leading-none tracking-[6px] text-[#5E6B58] uppercase"
+        style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+      >
+        Odhira
+      </span>
+    </div>
+
+    {/* Ornamental bottom line */}
+    <span className="block w-16 h-px bg-[#A8B2A1] mx-auto mt-1" />
+
+  </a>
+</div>
             {/* Right icons */}
             <div className="flex items-center gap-5 text-[#202020]">
               {isAuthenticated ? (
                 <>
-                  <button
+                  {/* <button
                     onClick={() => setSearchOpen(!searchOpen)}
                     aria-label="Search"
                     className="hover:text-[#5E6B58] transition-colors"
                   >
                     <Search size={18} strokeWidth={1.5} />
-                  </button>
+                  </button> */}
 
                   <div className="relative group">
                     <Link
@@ -186,9 +203,6 @@ export default function Header() {
                     className="relative hover:text-[#5E6B58] transition-colors"
                   >
                     <ShoppingBag size={18} strokeWidth={1.5} />
-                    <span className="absolute -top-2 -right-2 bg-[#5E6B58] text-[#F8F5EE] text-[9px] w-[16px] h-[16px] rounded-full flex items-center justify-center font-semibold leading-none">
-                      2
-                    </span>
                   </Link>
                 </>
               ) : (
@@ -257,7 +271,7 @@ export default function Header() {
         </nav>
 
         {/* ── Search Bar (slide down) ────────────────────────── */}
-        <div
+        {/* <div
           className={`bg-[#F8F5EE] border-b border-[#E4E0D8] overflow-hidden transition-all duration-300 ease-out ${
             searchOpen ? "max-h-16 opacity-100" : "max-h-0 opacity-0"
           }`}
@@ -282,7 +296,7 @@ export default function Header() {
               <X size={16} />
             </button>
           </div>
-        </div>
+        </div> */}
 
         {/* ── Mobile Drawer ─────────────────────────────────── */}
         <div
