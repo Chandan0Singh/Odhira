@@ -48,18 +48,18 @@ export default function Footer() {
             </h4>
             <ul className="space-y-3">
               {[
-                "Contact Us",
-                "Shipping & Delivery",
-                "Returns & Exchanges",
-                "FAQ",
-                "Size Guide",
+                { label: "Contact Us", href: "/contact" },
+                { label: "Shipping & Delivery", href: "/shipping-delivery" },
+                { label: "Returns & Exchanges", href: "/returns-exchanges" },
+                { label: "FAQ", href: "/faq" },
+                { label: "Size Guide", href: "/size-guide" },
               ].map((item) => (
-                <li key={item}>
+                <li key={item.href}>
                   <Link
-                    href="#"
+                    href={item.href}
                     className="text-[13px] text-[#c8cfc5] hover:text-[#F8F5EE] transition-colors duration-200"
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 </li>
               ))}
