@@ -14,6 +14,7 @@ export default function Header() {
   const { user, logout, isAuthenticated } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   // const [searchOpen, setSearchOpen] = useState(false);
+  const [admin, setAdmin] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
   const [collections, setCollections] = useState([]);
@@ -21,6 +22,11 @@ export default function Header() {
   useEffect(() => {
     fetchCollections();
   }, []);
+
+  useEffect(() => {
+    setAdmin(user?.role === "admin");
+  }, [user]);
+
 
   const fetchCollections = async () => {
     try {
@@ -157,12 +163,14 @@ export default function Header() {
                         </p>
                       </div>
 
-                      <Link
-                        href="/admin"
-                        className="block px-4 py-3 text-sm hover:bg-[#F8F5EE]"
-                      >
+                      {admin && 
+                        <Link
+                          href="/admin"
+                          className="block px-4 py-3 text-sm hover:bg-[#F8F5EE]"
+                        >
                         Admin Dashboard
                       </Link>
+                      }
 
                       <Link
                         href="/account"

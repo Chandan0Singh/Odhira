@@ -21,6 +21,27 @@ const getAllOrders = async (req, res) => {
   }
 };
 
+const myAllOrders = async (req, res) => {
+  try {
+    const response = await Order.find()
+      .populate("userId", "firstName lastName name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: response,
+      orderLength: response.length,
+    });
+  } catch (error) {
+    console.error("Get all orders error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 const filterOrders = async (req, res) => {
   try {
     const { search, deliveryStatus, paymentStatus } = req.query;
@@ -158,4 +179,5 @@ module.exports = {
   createOrder,
   filterOrders,
   getOrderById,
+  myAllOrders,
 };
