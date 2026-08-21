@@ -15,18 +15,37 @@ export const AuthProvider = ({ children }) => {
     const savedUser = localStorage.getItem("user");
     const savedToken = localStorage.getItem("token");
 
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    // Restore user safely
+    if (savedUser && savedUser !== "undefined" && savedUser !== "null") {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error("Invalid user data:", error);
+        localStorage.removeItem("user");
+        setUser(null);
+      }
+    } else {
+      localStorage.removeItem("user");
+      setUser(null);
     }
 
-    if (savedToken) {
+    // Restore token safely
+    if (savedToken && savedToken !== "undefined" && savedToken !== "null") {
       setToken(savedToken);
+    } else {
+      localStorage.removeItem("token");
+      setToken(null);
     }
 
     setLoading(false);
   }, []);
 
   const login = ({ user, token }) => {
+    if (!user || !token) {
+      console.error("Login failed: user or token missing");
+      return;
+    }
+
     localStorage.setItem("user", JSON.stringify(user));
     localStorage.setItem("token", token);
 
