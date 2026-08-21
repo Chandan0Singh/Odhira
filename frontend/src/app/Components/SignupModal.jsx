@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
+import Toast from "../Components/Toast";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -17,6 +18,7 @@ export default function SignupModal({ isOpen, onClose, openLogin }) {
     confirmPassword: "",
   });
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("success");
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -35,32 +37,24 @@ export default function SignupModal({ isOpen, onClose, openLogin }) {
 
       const data = await res.json();
 
-      // if (res.ok) {
-      //   setMessage("✅ User Registered Successfully!");
-      //   login(data);
-
-      //   setTimeout(() => {
-      //     onClose();
-      //     router.push("/");
-      //   }, 1500);
-      // } else {
-      //   setMessage(`❌ Error: ${data.message || "Registration failed"}`);
-      // }
-
       if (res.ok) {
         setMessage(
-          "✅ Account created! Please check your email and verify your account.",
+          "Account created! Please check your email and verify your account.",
         );
+        setMessageType("success");
 
         setTimeout(() => {
           onClose();
         }, 3000);
       } else {
-        setMessage(`❌ ${data.message || "Registration failed"}`);
+        setMessage(data.message || "Registration failed");
+        setMessageType("error");
       }
     } catch (error) {
       console.error("Signup error:", error);
-      setMessage("❌ Server error");
+
+      setMessage("Unable to connect to the server. Please try again.");
+      setMessageType("error");
     }
   };
 
@@ -72,10 +66,24 @@ export default function SignupModal({ isOpen, onClose, openLogin }) {
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return (
+      <Toast
+        message={message}
+        type={messageType}
+        onClose={() => setMessage("")}
+      />
+    );
+  }
 
   return (
     <>
+      <Toast
+        message={message}
+        type={messageType}
+        onClose={() => setMessage("")}
+      />
+
       {/* Backdrop */}
       <div
         onClick={onClose}
@@ -92,10 +100,6 @@ export default function SignupModal({ isOpen, onClose, openLogin }) {
           >
             <X size={20} />
           </button>
-
-          {message && (
-            <p className="text-center text-sm font-medium">{message}</p>
-          )}
 
           {/* Heading */}
           <div className="text-center mb-8">
