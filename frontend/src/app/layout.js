@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "./Components/Header";
 import Footer from "./Components/Footer";
 import LayoutWrapper from "./Components/layout/LayoutWrapper";
+import FloatingContact from "./Components/FloatingContact";
 
 import { AuthProvider } from "@/context/AuthContext";
 
@@ -35,6 +36,7 @@ export default function RootLayout({ children }) {
 
           <LayoutWrapper>
             {children}
+            <FloatingContact/>
           </LayoutWrapper>
 
         </AuthProvider>

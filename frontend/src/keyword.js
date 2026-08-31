@@ -1,0 +1,1 @@
+export const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://tour-4exy.onrender.com";

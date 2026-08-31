@@ -14,6 +14,7 @@ const lookbookRoutes = require("./routes/lookbookRoutes");
 const homeRoutes = require("./routes/homeRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
+const contactRoutes = require("./routes/contactRoutes");
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use("/api/blog", blog);
 app.use("/api/order", order);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/home", homeRoutes);
+app.use("/api/contact", contactRoutes);
 app.use("/api/newsletter", newsletterRoutes);
 
 app.get('/', (req, res) => {
