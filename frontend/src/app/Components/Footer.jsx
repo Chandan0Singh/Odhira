@@ -7,8 +7,46 @@ import {
   FaPinterestP,
   FaWhatsapp,
 } from "react-icons/fa";
+import { useState } from "react";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Footer() {
+
+  const [email, setEmail] = useState("");
+    const [loading, setLoading] = useState(false);
+  
+    const handleMailer = async (e) => {
+      e.preventDefault();
+  
+      if (!email) return;
+  
+      try {
+        setLoading(true);
+  
+        const res = await fetch(`${API_BASE}/api/newsletter`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        });
+  
+        const data = await res.json();
+  
+        if (res.ok) {
+          alert("Subscribed successfully!");
+          setEmail("");
+        } else {
+          alert(data.message || "Subscription failed");
+        }
+      } catch (error) {
+        console.error("Newsletter error:", error);
+        alert("Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    };
   return (
     <footer
       className="bg-[#5E6B58] text-[#F8F5EE]"
@@ -150,17 +188,23 @@ export default function Footer() {
               Get updates on new arrivals and exclusive offers.
             </p>
 
-            <div className="flex border border-[#A8B2A1]/50 overflow-hidden">
+            <form onSubmit={handleMailer} className="flex border border-[#A8B2A1]/50 overflow-hidden">
               <input
                 type="email"
                 placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="flex-1 h-10 px-3 bg-transparent text-[#F8F5EE] text-xs
                            placeholder-[#A8B2A1] outline-none"
               />
-              <button className="px-4 h-10 bg-[#A8B2A1] text-[#5E6B58] text-xs font-bold uppercase tracking-widest hover:bg-[#F8F5EE] transition-colors duration-200">
-                →
+              <button 
+                type="submit"
+                className="px-4 h-10 bg-[#A8B2A1] text-[#5E6B58] text-xs font-bold uppercase tracking-widest hover:bg-[#F8F5EE] transition-colors duration-200"
+                disabled={loading}
+              >
+                {loading ? "Subscribing..." : "→"}
               </button>
-            </div>
+            </form>
 
             <div className="mt-6 space-y-2">
               {[
