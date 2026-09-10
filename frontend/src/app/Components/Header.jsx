@@ -27,7 +27,6 @@ export default function Header() {
     setAdmin(user?.role === "admin");
   }, [user]);
 
-
   const fetchCollections = async () => {
     try {
       const res = await axios.get(`${API_BASE}/api/collections/names`);
@@ -94,35 +93,33 @@ export default function Header() {
 
             {/* Logo — always centered on desktop, left-offset on mobile */}
             <div className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 lg:mx-auto">
-  <a href="/" className="block text-center">
+              <a href="/" className="block text-center">
+                {/* Ornamental top line */}
+                <span className="block w-16 h-px bg-[#A8B2A1] mx-auto mb-1" />
 
-    {/* Ornamental top line */}
-    <span className="block w-16 h-px bg-[#A8B2A1] mx-auto mb-1" />
+                {/* Logo + Name */}
+                <div className="flex items-center justify-center gap-2">
+                  <Image
+                    src="/logo/ordira logo.jpeg"
+                    alt="Odhira Logo"
+                    width={45}
+                    height={45}
+                    className="object-contain"
+                    priority
+                  />
 
-    {/* Logo + Name */}
-    <div className="flex items-center justify-center gap-2">
-      <Image
-        src="/logo/ordira logo.jpeg"
-        alt="Odhira Logo"
-        width={45}
-        height={45}
-        className="object-contain"
-        priority
-      />
+                  <span
+                    className="font-serif text-[28px] leading-none tracking-[6px] text-[#5E6B58] uppercase"
+                    style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                  >
+                    Odhira
+                  </span>
+                </div>
 
-      <span
-        className="font-serif text-[28px] leading-none tracking-[6px] text-[#5E6B58] uppercase"
-        style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-      >
-        Odhira
-      </span>
-    </div>
-
-    {/* Ornamental bottom line */}
-    <span className="block w-16 h-px bg-[#A8B2A1] mx-auto mt-1" />
-
-  </a>
-</div>
+                {/* Ornamental bottom line */}
+                <span className="block w-16 h-px bg-[#A8B2A1] mx-auto mt-1" />
+              </a>
+            </div>
             {/* Right icons */}
             <div className="flex items-center gap-5 text-[#202020]">
               {isAuthenticated ? (
@@ -163,14 +160,14 @@ export default function Header() {
                         </p>
                       </div>
 
-                      {admin && 
+                      {admin && (
                         <Link
                           href="/admin"
                           className="block px-4 py-3 text-sm hover:bg-[#F8F5EE]"
                         >
-                        Admin Dashboard
-                      </Link>
-                      }
+                          Admin Dashboard
+                        </Link>
+                      )}
 
                       <Link
                         href="/account"
