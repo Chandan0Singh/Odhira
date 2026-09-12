@@ -5,8 +5,11 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
-const API = `${proccess}/api`;
+const API = `${API_BASE}/api`;
+
+console.log("API:", API);
 
 const emptyVariant = {
   sku: "",
