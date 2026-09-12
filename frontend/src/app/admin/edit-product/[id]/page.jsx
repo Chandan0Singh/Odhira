@@ -9,8 +9,6 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 const API = `${API_BASE}/api`;
 
-console.log("API:", API);
-
 const emptyVariant = {
   sku: "",
   size: "",
@@ -86,7 +84,9 @@ export default function EditProduct() {
           axios.get(`${API}/collections`).catch(() => ({ data: [] })),
         ]);
 
-        const p = productRes.data;
+        const p = productRes.data.data;
+
+        console.log("productRes : ", p.data);
 
         setForm({
           title: p.title || "",

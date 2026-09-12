@@ -118,13 +118,18 @@ const getProductById = async (req, res) => {
 
     const { id } = req.params;
 
+    console.log("id  aaaa:", id)
+
     // Validate MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
+      console.log("Invalid product ID:", id);
       return res.status(400).json({
         success: false,
         message: "Invalid product ID",
       });
     }
+
+
 
     const product = await Product.findById(id)
       .populate("category", "name slug")
@@ -132,12 +137,15 @@ const getProductById = async (req, res) => {
       .lean();
 
     if (!product) {
+      console.log("Product not found for ID:", id);
       return res.status(404).json({
         success: false,
         message: "Product not found",
       });
     }
 
+    console.log("Product found for ID:", id);
+    console.log
     return res.status(200).json({
       success: true,
       data: product,
