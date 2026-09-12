@@ -50,7 +50,9 @@ export default function AdminProductsDashboard() {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this product? This cannot be undone.")) return;
     try {
-      await axios.delete(`${API}/${id}`);
+      await axios.delete(`${API}/${id}`, {
+        headers: {Authorization: `Bearer ${token}`}
+      });
       setProducts((prev) => prev.filter((p) => p._id !== id));
     } catch (err) {
       console.error("Delete Error:", err);
@@ -61,6 +63,8 @@ export default function AdminProductsDashboard() {
   const activeCount = products.filter((p) => p.status === "Active").length;
   const saleCount = products.filter((p) => p.isSale).length;
   const featuredCount = products.filter((p) => p.isFeatured).length;
+
+  const token = localStorage.getItem("token");
 
   const filtered = products.filter(
     (p) =>

@@ -17,11 +17,39 @@ export default function AddProduct() {
   // ─── REMOTE DATA ────────────────────────────────────────────────────────────
   const [categories,  setCategories]  = useState([]);
   const [collections, setCollections] = useState([]);
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    axios.get(`${API}/categories`).then(({ data }) => setCategories(data)).catch(console.error);
-    axios.get(`${API}/collections`).then(({ data }) => setCollections(data)).catch(console.error);
-  }, []);
+  const fetchData = async () => {
+    try {
+      const [categoriesRes, collectionsRes] = await Promise.all([
+        axios.get(`${API}/categories`),
+        axios.get(`${API}/collections`),
+      ]);
+
+      const categoriesData = categoriesRes.data;
+      const collectionsData = collectionsRes.data;
+
+      // Categories API response normalize
+      setCategories(
+        Array.isArray(categoriesData)
+          ? categoriesData
+          : categoriesData?.categories || []
+      );
+
+      // Collections API response normalize
+      setCollections(
+        Array.isArray(collectionsData)
+          ? collectionsData
+          : collectionsData?.collections || []
+      );
+    } catch (error) {
+      console.error("Failed to load categories and collections:", error);
+    }
+  };
+
+  fetchData();
+}, []);
 
   // ─── FORM STATE ─────────────────────────────────────────────────────────────
   const [form, setForm] = useState({
@@ -128,7 +156,9 @@ export default function AddProduct() {
         images: images.filter((img) => img.url),
       };
 
-      await axios.post(`${API}/products/add`, payload);
+      await axios.post(`${API}/products/add`, payload, {
+        headers: {Authorization: `Bearer ${token}`}
+      });
       alert("✅ Product added successfully!");
 
       // reset
