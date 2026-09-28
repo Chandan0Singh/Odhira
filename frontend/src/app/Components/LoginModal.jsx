@@ -171,7 +171,7 @@ export default function LoginModal({ isOpen, onClose, openSignup }) {
           <p className="text-center mt-6 text-sm">
             New Customer?{" "}
             <button
-              typeof="button"
+              type="button"
               onClick={openSignup}
               className="font-semibold text-[#5E6B58]"
             >

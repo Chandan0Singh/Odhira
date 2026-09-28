@@ -31,7 +31,7 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${playfair.variable} ${poppins.variable}`}
     >
-      <body className="antialiased bg-[#F8F5EE] text-[#2D2D2D]">
+      <body className="antialiased bg-[#F8F5EE] text-[#2D2D2D] overflow-x-hidden ">
         <AuthProvider>
 
           <LayoutWrapper>

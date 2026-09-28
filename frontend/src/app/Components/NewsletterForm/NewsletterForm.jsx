@@ -52,12 +52,22 @@ export default function NewsletterForm() {
       />
 
       <button
-        type="submit"
-        disabled={loading}
-        className="bg-[#4B5A43] text-white px-8 disabled:opacity-50"
-      >
-        {loading ? "Subscribing..." : "Subscribe"}
-      </button>
+  type="submit"
+  disabled={loading}
+  className="bg-[#4B5A43] text-white px-4 sm:px-8 py-2.5 whitespace-nowrap text-sm sm:text-base disabled:opacity-50"
+>
+  {loading ? (
+    <>
+      <span className="hidden sm:inline">Subscribing...</span>
+      <span className="sm:hidden">Joining...</span>
+    </>
+  ) : (
+    <>
+      <span className="hidden sm:inline">Subscribe</span>
+      <span className="sm:hidden px-[12px] text-[18px]">Join</span>
+    </>
+  )}
+</button>
     </form>
   );
 }

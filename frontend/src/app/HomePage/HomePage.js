@@ -277,18 +277,18 @@ export default async function Home() {
 
       {/* NEWSLETTER */}
 
-      <section className="py-12 sm:py-16 md:py-20 lg:py-24 text-center px-4">
-        <div className="w-full max-w-2xl mx-auto px-3 sm:px-6">
-          <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-serif text-[#4B5A43] leading-tight break-words">
+      <section className="w-full py-10 xs:py-12 sm:py-16 md:py-20 lg:py-24 text-center px-3 xs:px-4">
+        <div className="w-full max-w-2xl mx-auto">
+          <h2 className="text-[clamp(1.5rem,7vw,3rem)] font-serif font-medium text-[#4B5A43] leading-[1.15] tracking-tight px-1 break-words">
             {home?.newsletter?.title || "Join Our Community"}
           </h2>
 
-          <p className="mt-3 sm:mt-4 md:mt-6 text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed max-w-xl mx-auto px-2 sm:px-0">
+          <p className="mt-3 xs:mt-4 sm:mt-5 md:mt-6 mx-auto w-full max-w-xl px-1 xs:px-2 sm:px-0 text-[13px] xs:text-sm sm:text-base md:text-lg text-gray-600 leading-[1.6]">
             {home?.newsletter?.description ||
               "Get exclusive access to new arrivals, promotions and fashion inspiration."}
           </p>
 
-          <div className="mt-5 sm:mt-6 md:mt-8 w-full max-w-md mx-auto px-2 sm:px-0">
+          <div className="w-full max-w-md mx-auto">
             <NewsletterForm />
           </div>
         </div>

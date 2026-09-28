@@ -84,7 +84,8 @@ export default function Header() {
           <div className="max-w-7xl mx-auto px-8 flex items-center justify-between">
             {/* Mobile hamburger */}
             <button
-              className="lg:hidden text-[#202020] p-1"
+              // className="lg:hidden text-[#202020] p-1 z-[9999]"
+              className="relative z-[99999] min-[759]:hidden text-[#202020] p-2 touch-manipulation"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label="Toggle menu"
             >
@@ -92,7 +93,7 @@ export default function Header() {
             </button>
 
             {/* Logo — always centered on desktop, left-offset on mobile */}
-            <div className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 lg:mx-auto">
+            <div className="absolute z-10 left-1/2 -translate-x-1/2 max-[759px]:left-auto max-[759px]:mr-[2vw] max-[759px]:right-6 max-[759px]:translate-x-0 lg:static lg:mx-auto" >
               <a href="/" className="block text-center">
                 {/* Ornamental top line */}
                 <span className="block w-16 h-px bg-[#A8B2A1] mx-auto mb-1" />
@@ -121,7 +122,7 @@ export default function Header() {
               </a>
             </div>
             {/* Right icons */}
-            <div className="flex items-center gap-5 text-[#202020]">
+            <div className="flex items-center gap-5 text-[#202020] max-[759px]:!hidden">
               {isAuthenticated ? (
                 <>
                   {/* <button
@@ -227,7 +228,7 @@ export default function Header() {
         </div>
 
         {/* ── Navigation Row ────────────────────────────────── */}
-        <nav className="hidden lg:block bg-[#F8F5EE] border-b border-[#E4E0D8]">
+        <nav className="max-[759]:hidden lg:block bg-[#F8F5EE] border-b border-[#E4E0D8]">
           <div className="max-w-7xl mx-auto px-8">
             <ul className="flex items-center justify-center gap-12 h-11">
               {navLinks.map((link) => (
@@ -305,24 +306,109 @@ export default function Header() {
 
         {/* ── Mobile Drawer ─────────────────────────────────── */}
         <div
-          className={`lg:hidden bg-[#F8F5EE] border-b border-[#E4E0D8] overflow-hidden
-                    transition-all duration-300 ease-out ${
-                      mobileOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                    }`}
+          className={`hidden max-[758px]:block bg-[#F8F5EE] border-b border-[#E4E0D8] overflow-hidden
+    transition-all duration-300 ease-out ${
+      mobileOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+    }`}
         >
-          <ul className="flex flex-col px-8 py-4 gap-5">
+          <ul className="flex flex-col px-6 sm:px-8 py-5 gap-5">
             {navLinks.map((link) => (
               <li key={link.label}>
                 <a
                   href={link.href}
-                  className="text-sm uppercase tracking-[2px] text-[#202020] font-medium
-                           hover:text-[#5E6B58] transition-colors"
+                  className="
+            block
+            text-sm
+            uppercase
+            tracking-[2px]
+            text-[#202020]
+            font-medium
+            hover:text-[#5E6B58]
+            transition-colors
+          "
                   onClick={() => setMobileOpen(false)}
                 >
                   {link.label}
                 </a>
               </li>
             ))}
+
+            <div className="h-[1px] bg-[#5e6b58] min-[759px]:hidden"></div>
+
+            {/* Signup */}
+            {!isAuthenticated && (
+              <li className="min-[759px]:hidden">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    setSignupOpen(true);
+                  }}
+                  className="
+            block
+            text-sm
+            uppercase
+            tracking-[2px]
+            text-[#202020]
+            font-medium
+            hover:text-[#5E6B58]
+            transition-colors
+          "
+                >
+                  Sign Up
+                </button>
+              </li>
+            )}
+
+            {/* Login */}
+            {!isAuthenticated && (
+              <li className="min-[759px]:hidden">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    setLoginOpen(true);
+                  }}
+                  className="
+            block
+            text-sm
+            uppercase
+            tracking-[2px]
+            text-[#202020]
+            font-medium
+            hover:text-[#5E6B58]
+            transition-colors
+          "
+                >
+                  Login
+                </button>
+              </li>
+            )}
+
+            {/* Logout */}
+            {isAuthenticated && (
+              <li className="min-[759px]:hidden">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    logout();
+                  }}
+                  className="
+            block
+            text-sm
+            uppercase
+            tracking-[2px]
+            text-red-500
+            font-medium
+            hover:text-red-600
+            transition-colors
+          "
+                >
+                  Logout
+                </button>
+              </li>
+            )}
           </ul>
         </div>
       </header>
