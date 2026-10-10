@@ -119,18 +119,14 @@ const blogsData = [
 
 async function seed() {
   await mongoose.connect(process.env.MONGODB_URI);
-  console.log('✅ Connected to MongoDB');
 
   // Clear old data
   await Blog.deleteMany({});
-  console.log('🗑️  Cleared old blog data');
 
   // Insert blogs
   const inserted = await Blog.insertMany(blogsData);
-  console.log(`✅ ${inserted.length} blogs inserted successfully!`);
 
   await mongoose.disconnect();
-  console.log('🔌 Disconnected from MongoDB');
 }
 
 seed().catch((err) => {

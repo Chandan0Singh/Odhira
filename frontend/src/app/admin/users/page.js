@@ -78,7 +78,6 @@ export default function UserDashboard() {
       setAddPopup(false);
     } catch (error) {
       setAddError(error.response?.data?.message || "Failed to create user");
-      console.log("error :", error.response?.data || error.message);
     } finally {
       setAdding(false);
     }

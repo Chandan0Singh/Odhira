@@ -45,10 +45,7 @@ export default function ProductsPage() {
 
       const { data } = await axios.get(`${API}/products`, { params });
 
-      console.log("Fetched products:", data.products);
-
       setProducts(data.products || []);
-      console.log("dsafc", data.products);
       setTotal(data.total   || 0);
       setPages(data.pages   || 1);
     } catch (err) {

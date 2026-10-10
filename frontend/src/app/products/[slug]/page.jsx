@@ -17,8 +17,6 @@ export default function ProductPage() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
 
-  console.log("user:", user);
-
   useEffect(() => {
     if (!slug) return;
 
@@ -26,8 +24,6 @@ export default function ProductPage() {
       try {
         const res = await fetch(`${API}/products/slug/${slug}`);
         const data = await res.json();
-
-        console.log("Product Data:", data);
 
         if (data.success) {
           setProduct(data.product);
@@ -74,7 +70,6 @@ export default function ProductPage() {
   const outOfStock = selectedVariant ? selectedVariant.stock <= 0 : true;
 
   const addToCart = async (id, quantity = 1, userId) => {
-    console.log("Adding to cart:", { id, quantity, userId });
     try {
       if (!userId) {
         alert("Please login to add items to your cart.");

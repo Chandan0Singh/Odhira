@@ -54,8 +54,6 @@ const sendVerificationEmail = async (email, name, verificationUrl) => {
       `,
     });
 
-    console.log("Verification email sent:", response);
-
     return response;
   } catch (error) {
     console.error(

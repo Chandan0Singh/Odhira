@@ -12,10 +12,6 @@ export default function CheckoutContext() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  if (user) {
-    console.log("user g :", user.id);
-  }
-
   const productId = searchParams.get("productId");
   const from = searchParams.get("from");
   const qty = Number(searchParams.get("qty")) || 1;
@@ -81,8 +77,6 @@ export default function CheckoutContext() {
       }
     }
   }, [authLoading, user, from, productId]);
-
-  console.log("cartItem : ", cartItems);
 
   const fetchSingleProduct = async () => {
     try {
@@ -218,8 +212,6 @@ export default function CheckoutContext() {
       });
 
       const data = await response.json();
-
-      console.log("Cart cleared:", data);
 
       if (!response.ok) {
         throw new Error(data.message);

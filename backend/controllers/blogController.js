@@ -184,7 +184,6 @@ const updateBlog = async (req, res) => {
       data: updatedBlog,
     });
   } catch (error) {
-    console.log("CASDca", error);
     res.status(500).json({
       success: false,
       message: error.message,

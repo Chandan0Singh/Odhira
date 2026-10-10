@@ -18,8 +18,6 @@ export default function LookbookPage() {
 
       const result = await response.json();
 
-      console.log("Lookbook data:", result.data); // Log the fetched data for debugging
-
       setLooks(result.data);
     } catch (err) {
       console.error(err);

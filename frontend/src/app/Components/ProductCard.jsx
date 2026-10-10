@@ -5,6 +5,8 @@ import { Heart, ShoppingBag, Zap } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -28,7 +30,6 @@ export default function ProductCard({ product }) {
         quantity: 1,
       });
 
-      console.log(res.data);
       alert("Product added to cart!");
     } catch (error) {
       console.error(error);
@@ -46,11 +47,13 @@ export default function ProductCard({ product }) {
     <div className="group bg-white border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300">
       {/* Product Image */}
       <div className="relative overflow-hidden">
+      <Link href={`/products/${product.slug}`} className="block">
         <img
           src={product.images?.[0]?.url || product.images?.[0]}
           alt={product.title}
           className="w-full h-[420px] object-cover transition-transform duration-500 group-hover:scale-105"
         />
+        </Link>
 
         {/* NEW Badge */}
         {product.isNewArrival && (

@@ -18,8 +18,6 @@ export default function CartPage() {
   const [userAddresses, setUserAddresses] = useState([]);
   const [cartId, setCartId] = useState(null);
 
-  console.log("cartItems : ", cartItems);
-
   useEffect(() => {
     if (user?.id) {
       fetchCart();
@@ -120,9 +118,6 @@ export default function CartPage() {
       });
 
       const data = await response.json();
-
-      console.log("Cart cleared:", data);
-
       if (!response.ok) {
         throw new Error(data.message);
       }

@@ -34,7 +34,6 @@ export default function AdminProductsDashboard() {
 
       const { data } = await axios.get(API, { params });
       setProducts(data.products || data || []);
-      console.log("Fetched Products:", data);
     } catch (err) {
       console.error("Fetch Products Error:", err);
     } finally {

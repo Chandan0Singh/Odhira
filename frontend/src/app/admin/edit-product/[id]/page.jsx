@@ -86,8 +86,6 @@ export default function EditProduct() {
 
         const p = productRes.data.data;
 
-        console.log("productRes : ", p.data);
-
         setForm({
           title: p.title || "",
           shortDescription: p.shortDescription || "",

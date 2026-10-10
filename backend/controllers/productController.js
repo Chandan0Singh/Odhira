@@ -119,7 +119,6 @@ const getProductById = async (req, res) => {
 
     // Validate MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      console.log("Invalid product ID:", id);
       return res.status(400).json({
         success: false,
         message: "Invalid product ID",
@@ -132,7 +131,6 @@ const getProductById = async (req, res) => {
       .lean();
 
     if (!product) {
-      console.log("Product not found for ID:", id);
       return res.status(404).json({
         success: false,
         message: "Product not found",
