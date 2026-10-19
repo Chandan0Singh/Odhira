@@ -175,14 +175,9 @@ const signupUser = async (req, res) => {
       verificationTokenExpires,
     });
 
-    const verificationUrl =
-  `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
 
-  await sendVerificationEmail(
-  newUser.email,
-  newUser.name,
-  verificationUrl
-);
+    await sendVerificationEmail(newUser.email, newUser.name, verificationUrl);
 
     // Generate JWT Token
     // const token = jwt.sign(
@@ -198,7 +193,8 @@ const signupUser = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "Account created successfully. Please check your email to verify your account.",
+      message:
+        "Account created successfully. Please check your email to verify your account.",
       // token,
       // user: {
       //   _id: newUser._id,

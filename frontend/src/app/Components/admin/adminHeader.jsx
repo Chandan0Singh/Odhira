@@ -39,6 +39,11 @@ export default function AdminHeader() {
       icon: <Package size={18} />,
     },
     {
+      name: "Categories",
+      href: "/admin/categories",
+      icon: <Package size={18} />,
+    },
+    {
       name: "Users",
       href: "/admin/users",
       icon: <Users size={18} />,
